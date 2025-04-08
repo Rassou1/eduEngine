@@ -4,6 +4,7 @@
 #include "imgui.h"
 #include "Log.hpp"
 #include "Game.hpp"
+#include "RenderSystem.h"
 
 bool Game::init()
 {
@@ -149,29 +150,31 @@ void Game::render(
     // Begin rendering pass
     forwardRenderer->beginPass(matrices.P, matrices.V, pointlight.pos, pointlight.color, camera.pos);
 
-    // Grass
-    forwardRenderer->renderMesh(grassMesh, grassWorldMatrix);
-    grass_aabb = grassMesh->m_model_aabb.post_transform(grassWorldMatrix);
+    RenderSystem(*entity_registry, *forwardRenderer);
 
-    // Horse
-    horseMesh->animate(3, time);
-    forwardRenderer->renderMesh(horseMesh, horseWorldMatrix);
-    horse_aabb = horseMesh->m_model_aabb.post_transform(horseWorldMatrix);
+    //// Grass
+    //forwardRenderer->renderMesh(grassMesh, grassWorldMatrix);
+    //grass_aabb = grassMesh->m_model_aabb.post_transform(grassWorldMatrix);
 
-    // Character, instance 1
-    characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);
-    forwardRenderer->renderMesh(characterMesh, characterWorldMatrix1);
-    character_aabb1 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix1);
+    //// Horse
+    //horseMesh->animate(3, time);
+    //forwardRenderer->renderMesh(horseMesh, horseWorldMatrix);
+    //horse_aabb = horseMesh->m_model_aabb.post_transform(horseWorldMatrix);
 
-    // Character, instance 2
-    characterMesh->animate(1, time * characterAnimSpeed);
-    forwardRenderer->renderMesh(characterMesh, characterWorldMatrix2);
-    character_aabb2 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix2);
+    //// Character, instance 1
+    //characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);
+    //forwardRenderer->renderMesh(characterMesh, characterWorldMatrix1);
+    //character_aabb1 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix1);
 
-    // Character, instance 3
-    characterMesh->animate(2, time * characterAnimSpeed);
-    forwardRenderer->renderMesh(characterMesh, characterWorldMatrix3);
-    character_aabb3 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix3);
+    //// Character, instance 2
+    //characterMesh->animate(1, time * characterAnimSpeed);
+    //forwardRenderer->renderMesh(characterMesh, characterWorldMatrix2);
+    //character_aabb2 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix2);
+
+    //// Character, instance 3
+    //characterMesh->animate(2, time * characterAnimSpeed);
+    //forwardRenderer->renderMesh(characterMesh, characterWorldMatrix3);
+    //character_aabb3 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix3);
 
     // End rendering pass
     drawcallCount = forwardRenderer->endPass();
