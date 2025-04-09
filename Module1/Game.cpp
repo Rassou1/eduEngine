@@ -6,6 +6,7 @@
 #include "Game.hpp"
 #include "RenderSystem.hpp"
 #include "PlayerControllerSystem.hpp"
+#include "NPCControllerSystem.hpp"
 
 
 bool Game::init()
@@ -97,6 +98,7 @@ bool Game::init()
 	entity_registry->emplace<TransformComponent>(horseEntity, TransformComponent(glm::vec3(30,0,-35), glm::vec3(0.01, 0.01, 0.01), glm::vec3(0,35,0)));
 	entity_registry->emplace<LinearVelocityComponent>(horseEntity, LinearVelocityComponent());
 	entity_registry->emplace<MeshComponent>(horseEntity, horseMesh);
+	entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
 
     return true;
 }
@@ -112,6 +114,7 @@ void Game::update(
 
     PlayerControllerSystem(entity_registry, input);
 	MovementSystem(entity_registry, deltaTime);
+	NPCControllerSystem(entity_registry);
 
     pointlight.pos = glm::vec3(
         glm_aux::R(time * 0.1f, { 0.0f, 1.0f, 0.0f }) *
