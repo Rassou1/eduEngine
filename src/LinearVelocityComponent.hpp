@@ -3,12 +3,13 @@
 
 class LinearVelocityComponent
 {
-	glm::vec3 velocity;
+	
 	glm::vec3 maxVelocity;
 	glm::vec3 acceleration;
 	float gravity = 0.5;
 
 public:
+	glm::vec3 velocity;
 	LinearVelocityComponent()
 	{
 		velocity = glm::vec3(0.0f, 0.0f, 0.0f);

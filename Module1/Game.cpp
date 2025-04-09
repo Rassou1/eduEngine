@@ -7,6 +7,7 @@
 #include "RenderSystem.hpp"
 #include "PlayerControllerSystem.hpp"
 #include "NPCControllerSystem.hpp"
+#include "NPCWaypointEditor.hpp"
 
 
 bool Game::init()
@@ -16,6 +17,8 @@ bool Game::init()
 
     shapeRenderer = std::make_shared<ShapeRendering::ShapeRenderer>();
     shapeRenderer->init();
+
+	float gameTime = 0.0f;
 
     // Do some entt stuff
     entity_registry = std::make_shared<entt::registry>();
@@ -323,7 +326,16 @@ void Game::renderUI()
 
     ImGui::SliderFloat("Animation speed", &characterAnimSpeed, 0.1f, 5.0f);
 
+
+    static bool showWaypointEditor = true;
+    if (showWaypointEditor) {
+        NPCWaypointEditor::ShowWaypointEditor(*entity_registry);
+    }
+
+    ImGui::Text("Time %s", );
+
     ImGui::End(); // end info window
+
 }
 
 void Game::destroy()
