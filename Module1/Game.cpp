@@ -4,7 +4,9 @@
 #include "imgui.h"
 #include "Log.hpp"
 #include "Game.hpp"
-#include "RenderSystem.h"
+#include "RenderSystem.hpp"
+#include "PlayerControllerSystem.hpp"
+
 
 bool Game::init()
 {
@@ -56,6 +58,14 @@ bool Game::init()
     characterMesh->load("assets/Amy/walking.fbx", true);
     // Remove root motion
     characterMesh->removeTranslationKeys("mixamorig:Hips");
+
+	auto characterEntity = entity_registry->create();
+    entity_registry->emplace<TransformComponent>(characterEntity, TransformComponent());
+    entity_registry->emplace<LinearVelocityComponent>(characterEntity, LinearVelocityComponent());
+    entity_registry->emplace<MeshComponent>(characterEntity, characterMesh);
+	entity_registry->emplace<PlayerControllerComponent>(characterEntity, PlayerControllerComponent());
+
+
 #endif
 #if 0
     // Eve 5.0.1 PACK FBX
@@ -69,15 +79,24 @@ bool Game::init()
     characterMesh->removeTranslationKeys("mixamorig:Hips");
 #endif
 
-    grassWorldMatrix = glm_aux::TRS(
+    /*grassWorldMatrix = glm_aux::TRS(
         { 0.0f, 0.0f, 0.0f },
         0.0f, { 0, 1, 0 },
-        { 100.0f, 100.0f, 100.0f });
+        { 100.0f, 100.0f, 100.0f });*/
 
-    horseWorldMatrix = glm_aux::TRS(
+	auto grassEntity = entity_registry->create();
+	entity_registry->emplace<TransformComponent>(grassEntity, TransformComponent(glm::vec3(0,0,0), glm::vec3(100,100,100), glm::vec3(0,1,0)));
+	entity_registry->emplace<MeshComponent>(grassEntity, grassMesh);
+
+   /* horseWorldMatrix = glm_aux::TRS(
         { 30.0f, 0.0f, -35.0f },
         35.0f, { 0, 1, 0 },
-        { 0.01f, 0.01f, 0.01f });
+        { 0.01f, 0.01f, 0.01f });*/
+
+	auto horseEntity = entity_registry->create();
+	entity_registry->emplace<TransformComponent>(horseEntity, TransformComponent(glm::vec3(30,0,-35), glm::vec3(0.01, 0.01, 0.01), glm::vec3(0,35,0)));
+	entity_registry->emplace<LinearVelocityComponent>(horseEntity, LinearVelocityComponent());
+	entity_registry->emplace<MeshComponent>(horseEntity, horseMesh);
 
     return true;
 }
@@ -89,7 +108,10 @@ void Game::update(
 {
     updateCamera(input);
 
-    updatePlayer(deltaTime, input);
+    //updatePlayer(deltaTime, input);
+
+    PlayerControllerSystem(entity_registry, input);
+	MovementSystem(entity_registry, deltaTime);
 
     pointlight.pos = glm::vec3(
         glm_aux::R(time * 0.1f, { 0.0f, 1.0f, 0.0f }) *
@@ -150,8 +172,8 @@ void Game::render(
     // Begin rendering pass
     forwardRenderer->beginPass(matrices.P, matrices.V, pointlight.pos, pointlight.color, camera.pos);
 
-    RenderSystem(*entity_registry, *forwardRenderer);
-
+    RenderSystem(forwardRenderer, entity_registry);
+    
     //// Grass
     //forwardRenderer->renderMesh(grassMesh, grassWorldMatrix);
     //grass_aabb = grassMesh->m_model_aabb.post_transform(grassWorldMatrix);

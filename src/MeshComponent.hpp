@@ -2,17 +2,16 @@
 #include <memory>
 #include "RenderableMesh.hpp"
 
-namespace eeng {
-	
+
 	class MeshComponent
 	{
 		MeshComponent(){};
 
 	public:
-		MeshComponent(std::shared_ptr<RenderableMesh> mesh)
+		MeshComponent(std::shared_ptr<eeng::RenderableMesh> mesh)
 		{
 			this->mesh = mesh;
 		}
-		std::shared_ptr<RenderableMesh> mesh;
+		std::shared_ptr<eeng::RenderableMesh> mesh;
 	};
-}
+
