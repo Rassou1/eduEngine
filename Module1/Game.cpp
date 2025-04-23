@@ -332,8 +332,6 @@ void Game::renderUI()
         NPCWaypointEditor::ShowWaypointEditor(*entity_registry);
     }
 
-    ImGui::Text("Time %s", );
-
     ImGui::End(); // end info window
 
 }
