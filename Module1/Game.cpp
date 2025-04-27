@@ -20,6 +20,8 @@ bool Game::init()
 
 	float gameTime = 0.0f;
 
+
+
     // Do some entt stuff
     entity_registry = std::make_shared<entt::registry>();
     auto ent1 = entity_registry->create();
@@ -155,6 +157,11 @@ void Game::update(
             glm_aux::to_string(ray.origin).c_str(),
             glm_aux::to_string(ray.dir).c_str());
     }
+
+    using Key = eeng::InputManager::Key;
+    bool boneShow = input->IsKeyPressed(Key::B);
+
+
 }
 
 void Game::render(
@@ -178,7 +185,7 @@ void Game::render(
     // Begin rendering pass
     forwardRenderer->beginPass(matrices.P, matrices.V, pointlight.pos, pointlight.color, camera.pos);
 
-    RenderSystem(forwardRenderer, entity_registry);
+    RenderSystem(forwardRenderer, entity_registry, shapeRenderer);
     
     //// Grass
     //forwardRenderer->renderMesh(grassMesh, grassWorldMatrix);
