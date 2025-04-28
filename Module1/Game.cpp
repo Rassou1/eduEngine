@@ -68,9 +68,9 @@ bool Game::init()
 	auto characterEntity = entity_registry->create();
     entity_registry->emplace<TransformComponent>(characterEntity, TransformComponent());
     entity_registry->emplace<LinearVelocityComponent>(characterEntity, LinearVelocityComponent());
-    entity_registry->emplace<MeshComponent>(characterEntity, MeshComponent(characterMesh, 25));
+    entity_registry->emplace<MeshComponent>(characterEntity, MeshComponent(characterMesh, 25, characterAnimIndex));
 	entity_registry->emplace<PlayerControllerComponent>(characterEntity, PlayerControllerComponent());
-	entity_registry->emplace<AnimationComponent>(characterEntity, AnimationComponent(characterAnimIndex, 1));
+	//entity_registry->emplace<AnimationComponent>(characterEntity, AnimationComponent(characterAnimIndex, 1));
 
 
 #endif
@@ -103,7 +103,7 @@ bool Game::init()
 	auto horseEntity = entity_registry->create();
 	entity_registry->emplace<TransformComponent>(horseEntity, TransformComponent(glm::vec3(30,0,-35), glm::vec3(0.01, 0.01, 0.01), glm::vec3(0,35,0)));
 	entity_registry->emplace<LinearVelocityComponent>(horseEntity, LinearVelocityComponent());
-	entity_registry->emplace<MeshComponent>(horseEntity, horseMesh);
+	entity_registry->emplace<MeshComponent>(horseEntity, MeshComponent(horseMesh, 1));
 	entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
 
     return true;
@@ -159,9 +159,6 @@ void Game::update(
             glm_aux::to_string(ray.dir).c_str());
     }
 
-    using Key = eeng::InputManager::Key;
-    bool boneShow = input->IsKeyPressed(Key::B);
-
 
 }
 
@@ -186,20 +183,21 @@ void Game::render(
     // Begin rendering pass
     forwardRenderer->beginPass(matrices.P, matrices.V, pointlight.pos, pointlight.color, camera.pos);
 
-    //RenderSystem(forwardRenderer, entity_registry, shapeRenderer);
-    RenderSystem(forwardRenderer, entity_registry, shapeRenderer, time, matrices);
-    
+    //RenderSystem(forwardRenderer, entity_registry, shapeRenderer, time, characterAnimIndex);
+	RenderSystem(forwardRenderer, entity_registry, shapeRenderer);
+
+
     //// Grass
     //forwardRenderer->renderMesh(grassMesh, grassWorldMatrix);
     //grass_aabb = grassMesh->m_model_aabb.post_transform(grassWorldMatrix);
 
     //// Horse
-    //horseMesh->animate(3, time);
+    horseMesh->animate(3, time);
     //forwardRenderer->renderMesh(horseMesh, horseWorldMatrix);
     //horse_aabb = horseMesh->m_model_aabb.post_transform(horseWorldMatrix);
 
-    //// Character, instance 1
-    //characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);
+    // Character, instance 1
+    characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);
     //forwardRenderer->renderMesh(characterMesh, characterWorldMatrix1);
     //character_aabb1 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix1);
 

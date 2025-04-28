@@ -1,7 +1,5 @@
 #pragma once
 #include <entt/entt.hpp>
-#include "LinearVelocityComponent.hpp"
-#include "InputManager.hpp"
 #include <memory>
 
 	class PlayerControllerComponent {

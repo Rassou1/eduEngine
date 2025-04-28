@@ -34,15 +34,6 @@ public:
         int windowWidth,
         int windowHeight) override;
 
-    // Matrices for view, projection and viewport
-    struct Matrices
-    {
-        glm::mat4 V;
-        glm::mat4 P;
-        glm::mat4 VP;
-        glm::ivec2 windowSize;
-    } matrices;
-
     /// @brief For destruction of game resources
     void destroy() override;
 
@@ -58,6 +49,15 @@ private:
 
     // Entity registry - to use in labs
     std::shared_ptr<entt::registry> entity_registry;
+
+    // Matrices for view, projection and viewport
+    struct Matrices
+    {
+        glm::mat4 V;
+        glm::mat4 P;
+        glm::mat4 VP;
+        glm::ivec2 windowSize;
+    } matrices;
 
     // Basic third-person camera
     struct Camera

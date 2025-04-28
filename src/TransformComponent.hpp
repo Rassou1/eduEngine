@@ -12,6 +12,8 @@
 
 		glm::mat4 transform;
 
+		bool showBones = true;
+
 		TransformComponent(float x, float y, float z)
 		{
 			position.x = x;
