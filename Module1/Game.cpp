@@ -68,8 +68,9 @@ bool Game::init()
 	auto characterEntity = entity_registry->create();
     entity_registry->emplace<TransformComponent>(characterEntity, TransformComponent());
     entity_registry->emplace<LinearVelocityComponent>(characterEntity, LinearVelocityComponent());
-    entity_registry->emplace<MeshComponent>(characterEntity, characterMesh);
+    entity_registry->emplace<MeshComponent>(characterEntity, MeshComponent(characterMesh, 25));
 	entity_registry->emplace<PlayerControllerComponent>(characterEntity, PlayerControllerComponent());
+	entity_registry->emplace<AnimationComponent>(characterEntity, AnimationComponent(characterAnimIndex, 1));
 
 
 #endif
@@ -185,7 +186,8 @@ void Game::render(
     // Begin rendering pass
     forwardRenderer->beginPass(matrices.P, matrices.V, pointlight.pos, pointlight.color, camera.pos);
 
-    RenderSystem(forwardRenderer, entity_registry, shapeRenderer);
+    //RenderSystem(forwardRenderer, entity_registry, shapeRenderer);
+    RenderSystem(forwardRenderer, entity_registry, shapeRenderer, time, matrices);
     
     //// Grass
     //forwardRenderer->renderMesh(grassMesh, grassWorldMatrix);
