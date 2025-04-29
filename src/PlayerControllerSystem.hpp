@@ -1,6 +1,7 @@
 #pragma once
 #include "PlayerControllerComponent.hpp"
 #include "MovementSystem.hpp"
+#include "InputManager.hpp"
 
 void PlayerControllerSystem(std::shared_ptr<entt::registry> registry, InputManagerPtr input) {
 

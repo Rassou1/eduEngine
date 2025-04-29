@@ -197,6 +197,16 @@ void Game::render(
 
     // Character, instance 1
     characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);
+    
+    
+    characterMesh->animateBlend(
+        characterAnimIndex, 2,           // Indices for Walk/Run
+        time, time * characterAnimSpeed,     // Current times
+        animBlend       // 0.3 = more Walk than Run
+    );
+    // 
+    // What??? Why does this not work??? Only blends *one frame*. Fix.
+     
     //forwardRenderer->renderMesh(characterMesh, characterWorldMatrix1);
     //character_aabb1 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix1);
 
@@ -331,7 +341,10 @@ void Game::renderUI()
     }
 
     ImGui::SliderFloat("Animation speed", &characterAnimSpeed, 0.1f, 5.0f);
-
+    
+    
+    ImGui::SliderFloat("Animation Blend", &animBlend, 0.0f, 1.0f);
+    //Animation blend from index0 to index1.
 
     static bool showWaypointEditor = true;
     if (showWaypointEditor) {

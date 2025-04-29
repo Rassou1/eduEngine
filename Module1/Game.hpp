@@ -108,7 +108,7 @@ private:
     eeng::AABB character_aabb1, character_aabb2, character_aabb3, horse_aabb, grass_aabb;
 
     // Placeholder animation state
-    int characterAnimIndex = -1;
+    int characterAnimIndex = 0;
     float characterAnimSpeed = 1.0f;
 
     // Stats
@@ -126,6 +126,7 @@ private:
         InputManagerPtr input);
 
     RenderSystem renderSystem;
+    float animBlend;
 };
 
 #endif
