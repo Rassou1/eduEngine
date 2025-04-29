@@ -8,13 +8,19 @@
 #include "imgui.h"
 
 
-namespace eeng {
+
+class RenderSystem {
+
+public:
+
+	RenderSystem() {};
+
+	bool showBones = true;
 
 	void RenderBoneAxles(MeshComponent& mesh, TransformComponent& transform, ShapeRendererPtr shapeRenderer) {
-		bool drawSkeleton = true;
 		//Add a toggle key.
 
-		if (drawSkeleton) {
+		if (showBones) {
 			for (int i = 0; i < mesh.mesh->boneMatrices.size(); ++i) {
 				auto IBinverse = glm::inverse(mesh.mesh->m_bones[i].inversebind_tfm);
 
@@ -40,9 +46,8 @@ namespace eeng {
 			};
 		}
 	}
-	
-	void RenderSystem(eeng::ForwardRendererPtr forwardRenderer, std::shared_ptr<entt::registry> registry, ShapeRendererPtr shapeRenderer, float time, int CharacterAnimationIndex)
-		//ADD ANIMATION ASK HECTOR?
+
+	void Render(eeng::ForwardRendererPtr forwardRenderer, std::shared_ptr<entt::registry> registry, ShapeRendererPtr shapeRenderer, float time, int CharacterAnimationIndex)
 	{
 		auto view = registry->view<TransformComponent, MeshComponent>();
 		for (auto entity : view) {
@@ -50,11 +55,11 @@ namespace eeng {
 			auto& mesh = view.get<MeshComponent>(entity);
 
 			RenderBoneAxles(mesh, transform, shapeRenderer);
-			
+
 			mesh.Update(CharacterAnimationIndex); // Update the animation index if needed
 
 			mesh.mesh->animate(mesh.animationIndex, time * 1.0f); //UNNECESSARILY COMPLICATED MIGHT BE ABLE TO JUST USE THE STUFF IN GAME.CPP ASK CJ
-			
+
 
 			//If statement below not needed since not using weak ptr, only a shared ptr
 			//if (auto meshPtr = mesh.mesh.lock())
@@ -62,7 +67,7 @@ namespace eeng {
 		}
 	}
 
-	void RenderSystem(eeng::ForwardRendererPtr forwardRenderer, std::shared_ptr<entt::registry> registry, ShapeRendererPtr shapeRenderer)
+	void Render(eeng::ForwardRendererPtr forwardRenderer, std::shared_ptr<entt::registry> registry, ShapeRendererPtr shapeRenderer)
 	{
 		auto view = registry->view<TransformComponent, MeshComponent>();
 		for (auto entity : view) {
@@ -78,7 +83,14 @@ namespace eeng {
 			forwardRenderer->renderMesh(mesh.mesh, transform.transform);
 		}
 	}
-}
+
+	void ToggleBones(InputManagerPtr input)
+	{
+		using Key = eeng::InputManager::Key;
+		showBones = !input->IsKeyPressed(Key::B);
+	}
+
+};
 
 
 

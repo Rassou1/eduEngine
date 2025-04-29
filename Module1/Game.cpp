@@ -20,8 +20,6 @@ bool Game::init()
 
 	float gameTime = 0.0f;
 
-
-
     // Do some entt stuff
     entity_registry = std::make_shared<entt::registry>();
     auto ent1 = entity_registry->create();
@@ -121,6 +119,7 @@ void Game::update(
     PlayerControllerSystem(entity_registry, input);
 	MovementSystem(entity_registry, deltaTime);
 	NPCControllerSystem(entity_registry);
+    renderSystem.ToggleBones(input);
 
     pointlight.pos = glm::vec3(
         glm_aux::R(time * 0.1f, { 0.0f, 1.0f, 0.0f }) *
@@ -184,7 +183,7 @@ void Game::render(
     forwardRenderer->beginPass(matrices.P, matrices.V, pointlight.pos, pointlight.color, camera.pos);
 
     //RenderSystem(forwardRenderer, entity_registry, shapeRenderer, time, characterAnimIndex);
-	RenderSystem(forwardRenderer, entity_registry, shapeRenderer);
+	renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer);
 
 
     //// Grass

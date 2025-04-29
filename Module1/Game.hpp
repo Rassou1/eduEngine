@@ -7,6 +7,7 @@
 #include "RenderableMesh.hpp"
 #include "ForwardRenderer.hpp"
 #include "ShapeRenderer.hpp"
+#include "RenderSystem.hpp"
 
 /// @brief A Game may hold, update and render 3D geometry and GUI elements
 class Game : public eeng::GameBase
@@ -123,6 +124,8 @@ private:
     void updatePlayer(
         float deltaTime,
         InputManagerPtr input);
+
+    RenderSystem renderSystem;
 };
 
 #endif
