@@ -59,7 +59,9 @@ public:
 			mesh.Update(CharacterAnimationIndex); // Update the animation index if needed
 
 			mesh.mesh->animate(mesh.animationIndex, time * 1.0f); //UNNECESSARILY COMPLICATED MIGHT BE ABLE TO JUST USE THE STUFF IN GAME.CPP ASK CJ
+			//Update: Works, and I'm not sure as to how or why.
 
+			//Maybe include animateblend here too? Doesn't work normally, unsure as to why.
 
 			//If statement below not needed since not using weak ptr, only a shared ptr
 			//if (auto meshPtr = mesh.mesh.lock())

@@ -15,9 +15,9 @@ public:
     void ChangeState(State newState)
     {
         currentState.ExitState();
-        currentState = newState;
         //Add animation blending logic here
+        currentState = newState;
         newState.EnterState();
     }
 
-}
+};

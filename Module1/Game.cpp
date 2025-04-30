@@ -68,8 +68,6 @@ bool Game::init()
     entity_registry->emplace<LinearVelocityComponent>(characterEntity, LinearVelocityComponent());
     entity_registry->emplace<MeshComponent>(characterEntity, MeshComponent(characterMesh, 25, characterAnimIndex));
 	entity_registry->emplace<PlayerControllerComponent>(characterEntity, PlayerControllerComponent());
-	//entity_registry->emplace<AnimationComponent>(characterEntity, AnimationComponent(characterAnimIndex, 1));
-
 
 #endif
 #if 0
@@ -196,16 +194,14 @@ void Game::render(
     //horse_aabb = horseMesh->m_model_aabb.post_transform(horseWorldMatrix);
 
     // Character, instance 1
-    characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);
+    //characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);
     
     
     characterMesh->animateBlend(
-        characterAnimIndex, 2,           // Indices for Walk/Run
+        characterAnimIndex, characterAnimIndex2,           // Indices for GUI state/Run
         time, time * characterAnimSpeed,     // Current times
-        animBlend       // 0.3 = more Walk than Run
+        animBlend       // Value controlled by GUI
     );
-    // 
-    // What??? Why does this not work??? Only blends *one frame*. Fix.
      
     //forwardRenderer->renderMesh(characterMesh, characterWorldMatrix1);
     //character_aabb1 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix1);
@@ -309,6 +305,35 @@ void Game::renderUI()
             ImGui::EndCombo();
             characterAnimIndex = curAnimIndex;
         }
+
+        //int curAnimIndex2 = characterAnimIndex2;
+        //std::string label2 = (curAnimIndex2 == -1 ? "Bind pose" : characterMesh->getAnimationName(curAnimIndex2));
+        //if (ImGui::BeginCombo("Character animation##animclip", label2.c_str()))
+        //{
+        //    // Bind pose item
+        //    const bool isSelected2 = (curAnimIndex2 == -1);
+        //    if (ImGui::Selectable("Bind pose", isSelected2))
+        //        curAnimIndex2 = -1;
+        //    if (isSelected2)
+        //        ImGui::SetItemDefaultFocus();
+
+        //    // Clip items
+        //    for (int i = 0; i < characterMesh->getNbrAnimations(); i++)
+        //    {
+        //        const bool isSelected2 = (curAnimIndex2 == i);
+        //        const auto label2 = characterMesh->getAnimationName(i) + "##" + std::to_string(i);
+        //        if (ImGui::Selectable(label.c_str(), isSelected2))
+        //            curAnimIndex2 = i;
+        //        if (isSelected2)
+        //            ImGui::SetItemDefaultFocus();
+        //    }
+        //    ImGui::EndCombo();
+        //    characterAnimIndex2 = curAnimIndex2;
+        //}
+
+        //Dropdown menu doesn't work, however the animation blending works and both variables can be changed.
+
+        ImGui::SliderInt("Animation Index", &characterAnimIndex2, 0, 2);
 
         // In-world position label
         const auto VP_P_V = matrices.VP * matrices.P * matrices.V;

@@ -6,9 +6,9 @@
 
 	class MeshComponent
 	{
-		MeshComponent(){};
-
 	public:
+		MeshComponent() {};
+
 		MeshComponent(std::shared_ptr<eeng::RenderableMesh> mesh)
 		{
 			this->mesh = mesh;

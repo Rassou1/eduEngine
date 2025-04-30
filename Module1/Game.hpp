@@ -127,6 +127,7 @@ private:
 
     RenderSystem renderSystem;
     float animBlend;
+    int characterAnimIndex2 = 2;
 };
 
 #endif

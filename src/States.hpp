@@ -8,6 +8,7 @@ protected:
     MeshComponent mesh;
 
 public:
+    State() { }
     State(StateMachine* stateMachine, MeshComponent mesh)
         :stateMachine(stateMachine) , mesh(mesh)
     {}
