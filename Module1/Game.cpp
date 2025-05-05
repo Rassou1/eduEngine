@@ -1,4 +1,4 @@
-
+#pragma once
 #include <entt/entt.hpp>
 #include "glmcommon.hpp"
 #include "imgui.h"
@@ -68,6 +68,7 @@ bool Game::init()
     entity_registry->emplace<LinearVelocityComponent>(characterEntity, LinearVelocityComponent());
     entity_registry->emplace<MeshComponent>(characterEntity, MeshComponent(characterMesh, 25, characterAnimIndex));
 	entity_registry->emplace<PlayerControllerComponent>(characterEntity, PlayerControllerComponent());
+	entity_registry->emplace<FSMComponent>(characterEntity, FSMComponent(1, 2, 0.3f)); 
 
 #endif
 #if 0
@@ -118,6 +119,7 @@ void Game::update(
 	MovementSystem(entity_registry, deltaTime);
 	NPCControllerSystem(entity_registry);
     renderSystem.ToggleBones(input);
+    renderSystem.Update(entity_registry, deltaTime);
 
     pointlight.pos = glm::vec3(
         glm_aux::R(time * 0.1f, { 0.0f, 1.0f, 0.0f }) *
@@ -180,9 +182,9 @@ void Game::render(
     // Begin rendering pass
     forwardRenderer->beginPass(matrices.P, matrices.V, pointlight.pos, pointlight.color, camera.pos);
 
-    //RenderSystem(forwardRenderer, entity_registry, shapeRenderer, time, characterAnimIndex);
-	renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer);
-
+    renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer, time, characterAnimIndex);
+	//renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer);
+    //renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer, time);
 
     //// Grass
     //forwardRenderer->renderMesh(grassMesh, grassWorldMatrix);
@@ -197,11 +199,11 @@ void Game::render(
     //characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);
     
     
-    characterMesh->animateBlend(
-        characterAnimIndex, characterAnimIndex2,           // Indices for GUI state/Run
-        time, time * characterAnimSpeed,     // Current times
-        animBlend       // Value controlled by GUI
-    );
+    //characterMesh->animateBlend(
+    //    characterAnimIndex, characterAnimIndex2,           // Indices for GUI state/Run
+    //    time, time * characterAnimSpeed,     // Current times
+    //    animBlend       // Value controlled by GUI
+    //);
      
     //forwardRenderer->renderMesh(characterMesh, characterWorldMatrix1);
     //character_aabb1 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix1);

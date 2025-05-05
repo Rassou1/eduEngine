@@ -6,6 +6,7 @@
 #include "glm/glm.hpp"
 #include "shapeRenderer.hpp"
 #include "imgui.h"
+#include "FSMComponent.hpp"
 
 
 
@@ -49,10 +50,22 @@ public:
 
 	void Render(eeng::ForwardRendererPtr forwardRenderer, std::shared_ptr<entt::registry> registry, ShapeRendererPtr shapeRenderer, float time, int CharacterAnimationIndex)
 	{
-		auto view = registry->view<TransformComponent, MeshComponent>();
+		auto view = registry->view<TransformComponent, MeshComponent, LinearVelocityComponent, FSMComponent>();
 		for (auto entity : view) {
 			auto& transform = view.get<TransformComponent>(entity);
 			auto& mesh = view.get<MeshComponent>(entity);
+			auto& velocity = view.get<LinearVelocityComponent>(entity);
+			auto& animState = view.get<FSMComponent>(entity);
+
+			animState.ApplyAnimation(mesh, time);
+
+			forwardRenderer->renderMesh(mesh.mesh, transform.transform);
+		}
+
+		auto view2 = registry->view<TransformComponent, MeshComponent>();
+		for (auto entity : view2) {
+			auto& transform = view2.get<TransformComponent>(entity);
+			auto& mesh = view2.get<MeshComponent>(entity);
 
 			RenderBoneAxles(mesh, transform, shapeRenderer);
 
@@ -61,16 +74,13 @@ public:
 			mesh.mesh->animate(mesh.animationIndex, time * 1.0f); //UNNECESSARILY COMPLICATED MIGHT BE ABLE TO JUST USE THE STUFF IN GAME.CPP ASK CJ
 			//Update: Works, and I'm not sure as to how or why.
 
-			//Maybe include animateblend here too? Doesn't work normally, unsure as to why.
-
-			//If statement below not needed since not using weak ptr, only a shared ptr
-			//if (auto meshPtr = mesh.mesh.lock())
 			forwardRenderer->renderMesh(mesh.mesh, transform.transform);
 		}
 	}
 
 	void Render(eeng::ForwardRendererPtr forwardRenderer, std::shared_ptr<entt::registry> registry, ShapeRendererPtr shapeRenderer)
 	{
+
 		auto view = registry->view<TransformComponent, MeshComponent>();
 		for (auto entity : view) {
 			auto& transform = view.get<TransformComponent>(entity);
@@ -79,11 +89,14 @@ public:
 			RenderBoneAxles(mesh, transform, shapeRenderer);
 
 			//Add a bind (for some god forsaken reason) that turns off the bone axle rendering.
-
+			
 			//If statement below not needed since not using weak ptr, only a shared ptr
 			//if (auto meshPtr = mesh.mesh.lock())
 			forwardRenderer->renderMesh(mesh.mesh, transform.transform);
 		}
+
+		
+
 	}
 
 	void ToggleBones(InputManagerPtr input)
@@ -92,6 +105,17 @@ public:
 		showBones = !input->IsKeyPressed(Key::B);
 	}
 
+
+	void Update(std::shared_ptr<entt::registry> registry, float deltaTime)
+	{
+		auto view = registry->view<LinearVelocityComponent, FSMComponent>();
+		for (auto entity : view) {
+			auto& velocity = view.get<LinearVelocityComponent>(entity);
+			auto& animState = view.get<FSMComponent>(entity);
+
+			animState.Update(deltaTime, velocity.GetVelocity());
+		}
+	}
 };
 
 
