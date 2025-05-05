@@ -48,18 +48,14 @@ public:
 		}
 	}
 
-	void Render(eeng::ForwardRendererPtr forwardRenderer, std::shared_ptr<entt::registry> registry, ShapeRendererPtr shapeRenderer, float time, int CharacterAnimationIndex)
+	void Render(eeng::ForwardRendererPtr forwardRenderer, std::shared_ptr<entt::registry> registry, ShapeRendererPtr shapeRenderer, float time)
 	{
-		auto view = registry->view<TransformComponent, MeshComponent, LinearVelocityComponent, FSMComponent>();
+		auto view = registry->view<MeshComponent, FSMComponent>();
 		for (auto entity : view) {
-			auto& transform = view.get<TransformComponent>(entity);
 			auto& mesh = view.get<MeshComponent>(entity);
-			auto& velocity = view.get<LinearVelocityComponent>(entity);
-			auto& animState = view.get<FSMComponent>(entity);
+			auto& FSM = view.get<FSMComponent>(entity);
 
-			animState.ApplyAnimation(mesh, time);
-
-			forwardRenderer->renderMesh(mesh.mesh, transform.transform);
+			FSM.ApplyAnimation(mesh, time);
 		}
 
 		auto view2 = registry->view<TransformComponent, MeshComponent>();
@@ -69,11 +65,10 @@ public:
 
 			RenderBoneAxles(mesh, transform, shapeRenderer);
 
-			mesh.Update(CharacterAnimationIndex); // Update the animation index if needed
-
-			mesh.mesh->animate(mesh.animationIndex, time * 1.0f); //UNNECESSARILY COMPLICATED MIGHT BE ABLE TO JUST USE THE STUFF IN GAME.CPP ASK CJ
-			//Update: Works, and I'm not sure as to how or why.
-
+			if (!mesh.blend) 
+			{
+				mesh.mesh->animate(mesh.animationIndex, time * 1.0f);
+			}
 			forwardRenderer->renderMesh(mesh.mesh, transform.transform);
 		}
 	}
@@ -104,7 +99,6 @@ public:
 		using Key = eeng::InputManager::Key;
 		showBones = !input->IsKeyPressed(Key::B);
 	}
-
 
 	void Update(std::shared_ptr<entt::registry> registry, float deltaTime)
 	{

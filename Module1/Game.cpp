@@ -66,7 +66,7 @@ bool Game::init()
 	auto characterEntity = entity_registry->create();
     entity_registry->emplace<TransformComponent>(characterEntity, TransformComponent());
     entity_registry->emplace<LinearVelocityComponent>(characterEntity, LinearVelocityComponent());
-    entity_registry->emplace<MeshComponent>(characterEntity, MeshComponent(characterMesh, 25, characterAnimIndex));
+    entity_registry->emplace<MeshComponent>(characterEntity, MeshComponent(characterMesh, 25, characterAnimIndex, true));
 	entity_registry->emplace<PlayerControllerComponent>(characterEntity, PlayerControllerComponent());
 	entity_registry->emplace<FSMComponent>(characterEntity, FSMComponent(1, 2, 0.3f)); 
 
@@ -100,7 +100,7 @@ bool Game::init()
 	auto horseEntity = entity_registry->create();
 	entity_registry->emplace<TransformComponent>(horseEntity, TransformComponent(glm::vec3(30,0,-35), glm::vec3(0.01, 0.01, 0.01), glm::vec3(0,35,0)));
 	entity_registry->emplace<LinearVelocityComponent>(horseEntity, LinearVelocityComponent());
-	entity_registry->emplace<MeshComponent>(horseEntity, MeshComponent(horseMesh, 1));
+	entity_registry->emplace<MeshComponent>(horseEntity, MeshComponent(horseMesh, 1, characterAnimIndex, true));
 	entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
 
     return true;
@@ -182,7 +182,7 @@ void Game::render(
     // Begin rendering pass
     forwardRenderer->beginPass(matrices.P, matrices.V, pointlight.pos, pointlight.color, camera.pos);
 
-    renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer, time, characterAnimIndex);
+    renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer, time);
 	//renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer);
     //renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer, time);
 
@@ -191,7 +191,7 @@ void Game::render(
     //grass_aabb = grassMesh->m_model_aabb.post_transform(grassWorldMatrix);
 
     //// Horse
-    horseMesh->animate(3, time);
+    //horseMesh->animate(3, time);
     //forwardRenderer->renderMesh(horseMesh, horseWorldMatrix);
     //horse_aabb = horseMesh->m_model_aabb.post_transform(horseWorldMatrix);
 
@@ -199,11 +199,11 @@ void Game::render(
     //characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);
     
     
-    //characterMesh->animateBlend(
-    //    characterAnimIndex, characterAnimIndex2,           // Indices for GUI state/Run
-    //    time, time * characterAnimSpeed,     // Current times
-    //    animBlend       // Value controlled by GUI
-    //);
+    horseMesh->animateBlend(
+        characterAnimIndex, characterAnimIndex2,           // Indices for GUI state/Run
+        time, time * characterAnimSpeed,     // Current times
+        animBlend       // Value controlled by GUI
+    );
      
     //forwardRenderer->renderMesh(characterMesh, characterWorldMatrix1);
     //character_aabb1 = characterMesh->m_model_aabb.post_transform(characterWorldMatrix1);
@@ -280,11 +280,11 @@ void Game::renderUI()
     {
     }
 
-    if (characterMesh)
+    if (horseMesh)
     {
         // Combo (drop-down) for animation clip
         int curAnimIndex = characterAnimIndex;
-        std::string label = (curAnimIndex == -1 ? "Bind pose" : characterMesh->getAnimationName(curAnimIndex));
+        std::string label = (curAnimIndex == -1 ? "Bind pose" : horseMesh->getAnimationName(curAnimIndex));
         if (ImGui::BeginCombo("Character animation##animclip", label.c_str()))
         {
             // Bind pose item
@@ -295,10 +295,10 @@ void Game::renderUI()
                 ImGui::SetItemDefaultFocus();
 
             // Clip items
-            for (int i = 0; i < characterMesh->getNbrAnimations(); i++)
+            for (int i = 0; i < horseMesh->getNbrAnimations(); i++)
             {
                 const bool isSelected = (curAnimIndex == i);
-                const auto label = characterMesh->getAnimationName(i) + "##" + std::to_string(i);
+                const auto label = horseMesh->getAnimationName(i) + "##" + std::to_string(i);
                 if (ImGui::Selectable(label.c_str(), isSelected))
                     curAnimIndex = i;
                 if (isSelected)
@@ -335,7 +335,7 @@ void Game::renderUI()
 
         //Dropdown menu doesn't work, however the animation blending works and both variables can be changed.
 
-        ImGui::SliderInt("Animation Index", &characterAnimIndex2, 0, 2);
+        ImGui::SliderInt("Animation Index", &characterAnimIndex2, 0, horseMesh->getNbrAnimations());
 
         // In-world position label
         const auto VP_P_V = matrices.VP * matrices.P * matrices.V;

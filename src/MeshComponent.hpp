@@ -20,11 +20,12 @@
 			this->axleLength = axleLength;
 		}
 
-		MeshComponent(std::shared_ptr<eeng::RenderableMesh> mesh, float axleLength, int animationIndex)
+		MeshComponent(std::shared_ptr<eeng::RenderableMesh> mesh, float axleLength, int animationIndex, bool blend)
 		{
 			this->mesh = mesh;
 			this->axleLength = axleLength;
 			this->animationIndex = animationIndex;
+			this->blend = blend;
 		}
 
 		void Update(int animationIndex)
@@ -32,6 +33,7 @@
 			this->animationIndex = animationIndex;
 		}
 
+		bool blend = false;
 		std::shared_ptr<eeng::RenderableMesh> mesh;
 		float axleLength = 1;
 		int animationIndex = 0;

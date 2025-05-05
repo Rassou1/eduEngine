@@ -17,17 +17,15 @@ public:
 private:
     State currentState = State::Idle;
     float blendFactor = 0.0f;
-    float blendDuration = 0.3f; // Time in seconds to complete blend
+    float blendDuration = 0.3f; 
     float blendTimer = 0.0f;
 
-    // Animation indices (customize these based on your actual animation indices)
-    int idleAnimIndex = 0;
-    int moveAnimIndex = 1;
+    int idleAnimIndex = 1;
+    int moveAnimIndex = 2;
 
     float idleAnimTime = 0.0f;
     float moveAnimTime = 0.0f;
 
-    // Threshold for considering the character moving
     float movementThreshold = 0.1f;
 
 public:
@@ -39,7 +37,6 @@ public:
         float speed = glm::length(velocity);
         bool isMoving = speed > movementThreshold;
 
-        // State transitions
         switch (currentState)
         {
         case State::Idle:
