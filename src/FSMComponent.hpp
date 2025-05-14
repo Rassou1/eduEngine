@@ -14,8 +14,9 @@ public:
         TransitionToMoving
     };
 
-private:
     State currentState = State::Idle;
+private:
+    
     float blendFactor = 0.0f;
     float blendDuration = 0.3f; 
     float blendTimer = 0.0f;
@@ -29,6 +30,7 @@ private:
     float movementThreshold = 0.1f;
 
 public:
+
     FSMComponent(int idleIndex, int moveIndex, float blendTime = 0.3f)
         : idleAnimIndex(idleIndex), moveAnimIndex(moveIndex), blendDuration(blendTime) {}
 

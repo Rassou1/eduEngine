@@ -97,7 +97,39 @@ public:
 	void ToggleBones(InputManagerPtr input)
 	{
 		using Key = eeng::InputManager::Key;
-		showBones = !input->IsKeyPressed(Key::B);
+		if (input->IsKeyPressed(Key::B)) {
+			showBones = !showBones;
+		}
+	}
+
+	void RenderUI(std::shared_ptr<entt::registry> registry)
+	{
+		ImGui::Begin("Animation State Debug");
+
+		auto view = registry->view<FSMComponent>();
+		for (auto entity : view) {
+			auto& fsm = view.get<FSMComponent>(entity);
+
+			ImGui::Text("Entity %d", (int)entity);
+
+			if (fsm.currentState == FSMComponent::State::Idle) {
+				ImGui::TextColored(ImVec4(0, 1, 0, 1), "Current State: Idle");
+			}
+			else if (fsm.currentState == FSMComponent::State::Moving) {
+				ImGui::TextColored(ImVec4(1, 0.5f, 0, 1), "Current State: Walking");
+			}
+			else if(fsm.currentState == FSMComponent::State::TransitionToIdle || fsm.currentState == FSMComponent::State::TransitionToMoving){
+				ImGui::TextColored(ImVec4(1, 0, 0, 1), "Current State: Transitioning");
+			}
+
+			ImGui::Separator();
+		}
+
+		if (ImGui::Button(showBones ? "Hide Bones" : "Show Bones")) {
+			showBones = !showBones;
+		}
+
+		ImGui::End();
 	}
 
 	void Update(std::shared_ptr<entt::registry> registry, float deltaTime)

@@ -183,6 +183,7 @@ void Game::render(
     forwardRenderer->beginPass(matrices.P, matrices.V, pointlight.pos, pointlight.color, camera.pos);
 
     renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer, time);
+    renderSystem.RenderUI(entity_registry);
 	//renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer);
     //renderSystem.Render(forwardRenderer, entity_registry, shapeRenderer, time);
 
