@@ -137,9 +137,9 @@ public:
 		auto view = registry->view<LinearVelocityComponent, FSMComponent>();
 		for (auto entity : view) {
 			auto& velocity = view.get<LinearVelocityComponent>(entity);
-			auto& animState = view.get<FSMComponent>(entity);
+			auto& FSM = view.get<FSMComponent>(entity);
 
-			animState.Update(deltaTime, velocity.GetVelocity());
+			FSM.Update(deltaTime, velocity.GetVelocity());
 		}
 	}
 };
