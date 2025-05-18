@@ -14,6 +14,8 @@ class RenderSystem {
 
 public:
 
+	//REFACTOR: Dupicate code removal
+
 	RenderSystem() {};
 
 	bool showBones = true;
@@ -73,27 +75,6 @@ public:
 		}
 	}
 
-	void Render(eeng::ForwardRendererPtr forwardRenderer, std::shared_ptr<entt::registry> registry, ShapeRendererPtr shapeRenderer)
-	{
-
-		auto view = registry->view<TransformComponent, MeshComponent>();
-		for (auto entity : view) {
-			auto& transform = view.get<TransformComponent>(entity);
-			auto& mesh = view.get<MeshComponent>(entity);
-
-			RenderBoneAxles(mesh, transform, shapeRenderer);
-
-			//Add a bind (for some god forsaken reason) that turns off the bone axle rendering.
-			
-			//If statement below not needed since not using weak ptr, only a shared ptr
-			//if (auto meshPtr = mesh.mesh.lock())
-			forwardRenderer->renderMesh(mesh.mesh, transform.transform);
-		}
-
-		
-
-	}
-
 	void ToggleBones(InputManagerPtr input)
 	{
 		using Key = eeng::InputManager::Key;
@@ -143,35 +124,3 @@ public:
 		}
 	}
 };
-
-
-
-	/*class RenderSystem
-	{
-		RenderSystem() {};
-		eeng::ForwardRenderer* forwardRendererPtr;
-		entt::registry registry;
-		std::shared_ptr<entt::registry> registryPtr;
-	public:
-
-		RenderSystem(eeng::ForwardRenderer* forwardRendererPtr, std::shared_ptr<entt::registry> registry)
-			: forwardRendererPtr(forwardRendererPtr), registry(registry)
-		{
-			this->forwardRendererPtr = forwardRendererPtr;
-			registry = registry;
-		}
-
-		void Render()
-		{
-			auto view = registry.view<TransformComponent, MeshComponent>();
-			for (auto entity : view) {
-				auto& transform = view.get<TransformComponent>(entity);
-				auto& mesh = view.get<MeshComponent>(entity);
-
-			}
-		}
-	};*/
-
-
-
-
