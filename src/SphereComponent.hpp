@@ -85,6 +85,22 @@ public:
 		return s;
 	}
 
+	Sphere BuildSphereFromAABB(const AABBCenterHalfWidths& aabb)
+	{
+		Sphere s;
+
+		s.center = aabb.center;
+
+		//fix
+		s.radius = glm::sqrt(
+			aabb.halfWidths[0] * aabb.halfWidths[0] +
+			aabb.halfWidths[1] * aabb.halfWidths[1] +
+			aabb.halfWidths[2] * aabb.halfWidths[2]
+		);
+
+		return s;
+	}
+
 	AABBCenterHalfWidths BuildAABBFromPoints(const glm::vec3 points[], int numberOfPoints)
 	{
 		auto minMaxVectors = FindMinMaxValues(points, numberOfPoints);
@@ -99,6 +115,19 @@ public:
 
 		for (int i = 0; i != 3; ++i) {
 			aabb.halfWidths[i] = (maxPoint[i] - minPoint[i]) / 2.0f;
+		}
+
+		return aabb;
+	}
+
+	AABBCenterHalfWidths BuildAABBFromSphere(const Sphere& sphere)
+	{
+		AABBCenterHalfWidths aabb;
+
+		aabb.center = sphere.center;
+
+		for (int i = 0; i != 3; ++i) {
+			aabb.halfWidths[i] = sphere.radius;
 		}
 
 		return aabb;
