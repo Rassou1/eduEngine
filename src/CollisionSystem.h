@@ -10,6 +10,12 @@ struct SimpleContact {
 	glm::vec3 contactNormal;
 };
 
+struct SphereNode {
+	Sphere* collisionRepresentation;
+	SphereNode* leftChild;
+	SphereNode* rightChild;
+};
+
 class CollisionSystem {
 
 	CollisionSystem() = default;
@@ -78,6 +84,47 @@ public:
 
 		return contact;
 
+	}
+
+	float DistanceBetweenCircles(Sphere* leftSphere, Sphere* rightSphere)
+	{
+		float centerToCenterDistance = glm::length(rightSphere->center - leftSphere->center);
+
+		float surfaceDistance = centerToCenterDistance - (leftSphere->radius + rightSphere->radius);
+
+		return (std::max(0.0f, surfaceDistance));
+	}
+
+	void FindMinMaxPoints(glm::vec3 leftCenter, glm::vec3 rightCenter, float leftRadius, float rightRadius, glm::vec3& minOut, glm::vec3& maxOut) {
+
+		minOut.x = std::min(leftCenter.x - leftRadius, rightCenter.x - rightRadius);
+		maxOut.x = std::max(leftCenter.x + leftRadius, rightCenter.x + rightRadius);
+
+		minOut.y = std::min(leftCenter.y - leftRadius, rightCenter.y - rightRadius);
+		maxOut.y = std::max(leftCenter.x + leftRadius, rightCenter.x + rightRadius);
+
+		minOut.z = std::min(leftCenter.z - leftRadius, rightCenter.z - rightRadius);
+		maxOut.z = std::max(leftCenter.z + leftRadius, rightCenter.z + rightRadius);
+	}
+
+	SphereNode* BuildNodeFromSingleSphere(Sphere* sphere) {
+		return new SphereNode{ sphere, nullptr, nullptr };
+	}
+
+	SphereNode* BuildNodeFromSpheres(Sphere* leftSphere, Sphere* rightSphere) {
+		glm::vec3 maxPoint, minPoint;
+		FindMinMaxPoints(leftSphere->center, rightSphere->center, leftSphere->radius, rightSphere->radius, minPoint, maxPoint);
+
+		glm::vec3 midPoint = (minPoint + (maxPoint - minPoint)) / 2.0f;
+		float radius = glm::length(maxPoint - midPoint) / 2.0f;
+
+		return new SphereNode{ new Sphere{midPoint, radius}, nullptr, nullptr };
+	}
+
+	std::vector<std::pair<SphereNode*, SphereNode*>> FindPairs(std::vector<SphereNode*>openList, float maxDistance) {
+		std::vector<std::pair<SphereNode*, SphereNode*>> allPairs;
+
+		return allPairs;
 	}
 
 };
