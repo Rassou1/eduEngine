@@ -121,6 +121,31 @@
 			position.z += z;
 		}
 
+		std::vector<glm::vec3*> GetAABBPoints() {
+			std::vector<glm::vec3*> points;
+
+			glm::vec3 bottomBackLeft =		position - scale;
+			glm::vec3 bottomBackRight =		glm::vec3(position.x + scale.x, position.y - scale.y, position.z - scale.z);
+			glm::vec3 bottomFrontLeft =		glm::vec3(position.x - scale.x, position.y - scale.y, position.z + scale.z);
+			glm::vec3 bottomFrontRight =	glm::vec3(position.x + scale.x, position.y - scale.y, position.z + scale.z);
+			glm::vec3 topBackLeft =			glm::vec3(position.x - scale.x, position.y + scale.y, position.z - scale.z);
+			glm::vec3 topBackRight =		glm::vec3(position.x + scale.x, position.y + scale.y, position.z - scale.z);
+			glm::vec3 topFrontLeft =		glm::vec3(position.x - scale.x, position.y + scale.y, position.z + scale.z);
+			glm::vec3 topFrontRight =		position + scale;
+
+			points.push_back(&bottomBackLeft);
+			points.push_back(&bottomBackRight);
+			points.push_back(&bottomFrontLeft);
+			points.push_back(&bottomFrontRight);
+			points.push_back(&topBackLeft);
+			points.push_back(&topBackRight);
+			points.push_back(&topFrontLeft);
+			points.push_back(&topFrontRight);
+
+			return points;
+			
+		}
+
 		~TransformComponent()
 		{
 		}

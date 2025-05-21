@@ -18,9 +18,12 @@ struct SphereNode {
 
 class CollisionSystem {
 
-	CollisionSystem() = default;
+	std::vector<SphereNode*> openList;
+	std::vector<Sphere*> spheres;
 
 public:
+
+	CollisionSystem() {};
 
 	bool TestCollisionSphereSphere(const Sphere& sphereA, const Sphere& sphereB) 
 	{
@@ -205,4 +208,33 @@ public:
 		return possibleCollisions;
 	}
 
+	void Update(std::shared_ptr<entt::registry> registry) {
+
+		auto view = registry->view<SphereComponent>();
+		for (auto entity : view) {
+			auto& sphereComponent = view.get<SphereComponent>(entity);
+
+			sphereComponent.Update(registry);
+			spheres.push_back(&sphereComponent.sphere);
+		}
+		
+		auto root = BuildBVHBottomUp(spheres, 50.0f);
+		
+		for (auto entity : view) {
+			auto& sphereComponent = view.get<SphereComponent>(entity);
+			auto possibleCollisions = FindPossibleCollisions(root, &sphereComponent.sphere);
+
+			for (auto& collision : possibleCollisions) {
+				if (collision != &sphereComponent.sphere) {
+					SimpleContact* contact = SphereSphere(sphereComponent.sphere, *collision);
+					if (contact) {
+						SeparateSpheres(sphereComponent.sphere, *collision, contact->penetrationDepth);
+						std::cout << "Collision detected between spheres: " << sphereComponent.sphere.center.x << " and " << collision->center.x << std::endl;
+						delete contact;
+					}
+				}
+			}
+		}
+
+	}
 };

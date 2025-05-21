@@ -4,12 +4,9 @@
 #include "imgui.h"
 #include "Log.hpp"
 #include "Game.hpp"
-#include "RenderSystem.hpp"
 #include "PlayerControllerSystem.hpp"
 #include "NPCControllerSystem.hpp"
 #include "NPCWaypointEditor.hpp"
-#include "CollisionSystem.h"
-#include "SphereComponent.hpp"
 
 
 bool Game::init()
@@ -71,7 +68,7 @@ bool Game::init()
     entity_registry->emplace<MeshComponent>(characterEntity, MeshComponent(characterMesh, 25, characterAnimIndex, true));
 	entity_registry->emplace<PlayerControllerComponent>(characterEntity, PlayerControllerComponent());
 	entity_registry->emplace<FSMComponent>(characterEntity, FSMComponent(1, 2, 0.3f)); 
-	entity_registry->emplace<SphereComponent>(characterEntity, SphereComponent()); //CHANGE SO THAT A SPHERE IS ACTUALLY MADE
+	entity_registry->emplace<SphereComponent>(characterEntity, SphereComponent());
 
 #endif
 #if 0
@@ -104,7 +101,8 @@ bool Game::init()
 	entity_registry->emplace<TransformComponent>(horseEntity, TransformComponent(glm::vec3(30,0,-35), glm::vec3(0.01, 0.01, 0.01), glm::vec3(0,35,0)));
 	entity_registry->emplace<LinearVelocityComponent>(horseEntity, LinearVelocityComponent());
 	entity_registry->emplace<MeshComponent>(horseEntity, MeshComponent(horseMesh, 1, characterAnimIndex, true));
-	entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
+	//entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
+	entity_registry->emplace<SphereComponent>(horseEntity, SphereComponent()); 
 
     return true;
 }
@@ -121,6 +119,7 @@ void Game::update(
     PlayerControllerSystem(entity_registry, input);
 	MovementSystem(entity_registry, deltaTime);
 	NPCControllerSystem(entity_registry);
+    collisionSystem.Update(entity_registry);
     renderSystem.ToggleBones(input);
     renderSystem.Update(entity_registry, deltaTime);
 
