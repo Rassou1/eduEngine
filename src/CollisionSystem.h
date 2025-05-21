@@ -123,8 +123,86 @@ public:
 
 	std::vector<std::pair<SphereNode*, SphereNode*>> FindPairs(std::vector<SphereNode*>openList, float maxDistance) {
 		std::vector<std::pair<SphereNode*, SphereNode*>> allPairs;
+		std::vector<SphereNode*> availableSpheres = openList;
 
+		while (!availableSpheres.empty()) {
+			SphereNode* currentNode = availableSpheres.back();
+			availableSpheres.pop_back();
+
+			float closestDistance = maxDistance;
+			SphereNode* closestNode = nullptr;
+			int closestIndex = -1;
+
+			for (int i = 0; i < availableSpheres.size(); ++i) {
+				float distance = DistanceBetweenCircles(currentNode->collisionRepresentation, availableSpheres[i]->collisionRepresentation);
+
+				if (distance < closestDistance) {
+					closestDistance = distance;
+					closestNode = availableSpheres[i];
+					closestIndex = i;
+				}
+			}
+
+			if (closestNode) {
+				availableSpheres.erase(availableSpheres.begin() + closestIndex);
+			}
+			allPairs.push_back({ currentNode, closestNode });
+		}
 		return allPairs;
+	}
+
+	SphereNode* BuildBVHBottomUp(std::vector<Sphere*> spheres, float maxDistanceBetweenLeaves) {
+		std::vector<SphereNode*> openList;
+
+		for (Sphere* sphere : spheres) {
+			openList.push_back(BuildNodeFromSingleSphere(sphere));
+		}
+
+		while (openList.size() != 1)
+		{
+			auto pairs = FindPairs(openList, maxDistanceBetweenLeaves);
+			openList.clear();
+			for (auto pair : pairs) {
+				if (pair.second) {
+					auto node = BuildNodeFromSpheres(pair.first->collisionRepresentation, pair.second->collisionRepresentation);
+					node->leftChild = pair.first;
+					node->rightChild = pair.second;
+					openList.push_back(node);
+				}
+				else {
+					auto node = BuildNodeFromSingleSphere(pair.first->collisionRepresentation);
+					node->leftChild = pair.first;
+					openList.push_back(node);
+				}
+			}
+			maxDistanceBetweenLeaves = std::numeric_limits<float>::max();
+		}
+		return openList[0];
+	}
+
+	std::vector<Sphere*> FindPossibleCollisions(SphereNode* treeRoot, Sphere* sphere) {
+		std::vector<Sphere*> possibleCollisions;
+
+		if (!sphere || !treeRoot) {
+			return possibleCollisions;
+		}
+
+		if (!TestCollisionSphereSphere(*treeRoot->collisionRepresentation, *sphere)) {
+			return possibleCollisions;
+		}
+
+		if (treeRoot->leftChild == nullptr && treeRoot->rightChild == nullptr) {
+			possibleCollisions.push_back(treeRoot->collisionRepresentation);
+			return possibleCollisions;
+		}
+
+		auto collisions = FindPossibleCollisions(treeRoot->leftChild, sphere);
+		possibleCollisions.insert(possibleCollisions.end(), collisions.begin(), collisions.end());
+
+		collisions = FindPossibleCollisions(treeRoot->rightChild, sphere);
+		possibleCollisions.insert(possibleCollisions.end(), collisions.begin(), collisions.end());
+
+		return possibleCollisions;
 	}
 
 };

@@ -8,6 +8,8 @@
 #include "PlayerControllerSystem.hpp"
 #include "NPCControllerSystem.hpp"
 #include "NPCWaypointEditor.hpp"
+#include "CollisionSystem.h"
+#include "SphereComponent.hpp"
 
 
 bool Game::init()
@@ -69,6 +71,7 @@ bool Game::init()
     entity_registry->emplace<MeshComponent>(characterEntity, MeshComponent(characterMesh, 25, characterAnimIndex, true));
 	entity_registry->emplace<PlayerControllerComponent>(characterEntity, PlayerControllerComponent());
 	entity_registry->emplace<FSMComponent>(characterEntity, FSMComponent(1, 2, 0.3f)); 
+	entity_registry->emplace<SphereComponent>(characterEntity, SphereComponent()); //CHANGE SO THAT A SPHERE IS ACTUALLY MADE
 
 #endif
 #if 0
