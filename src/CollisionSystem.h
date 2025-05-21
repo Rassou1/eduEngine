@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "SphereComponent.hpp"
+#include "Log.hpp"
 
 struct SimpleContact {
 	uint32_t idA;
@@ -229,6 +230,7 @@ public:
 					SimpleContact* contact = SphereSphere(sphereComponent.sphere, *collision);
 					if (contact) {
 						SeparateSpheres(sphereComponent.sphere, *collision, contact->penetrationDepth);
+						eeng::Log("Collision detected between spheres");
 						std::cout << "Collision detected between spheres: " << sphereComponent.sphere.center.x << " and " << collision->center.x << std::endl;
 						delete contact;
 					}
