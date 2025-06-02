@@ -15,7 +15,9 @@ void MovementSystem(std::shared_ptr<entt::registry> registry, float deltaTime) {
 		//transform.Translate(linearVelocity.GetVelocity());
 
 		transform.position += linearVelocity.GetVelocity() * deltaTime;
-
+		//std::cout << "position: " << transform.position.x << transform.position.y << transform.position.z << std::endl;
+		//std::cout << "velocity: " << linearVelocity.GetVelocity().x << linearVelocity.GetVelocity().y << linearVelocity.GetVelocity().z << std::endl;
+		
 		transform.UpdateTransform();
 	}
 

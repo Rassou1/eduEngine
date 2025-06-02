@@ -145,6 +145,7 @@ public:
 			auto& transform = registry->get<TransformComponent>(entity);
 
 			sphereComponent.aabb = BuildAABBFromPoints(transform.GetAABBPoints(), 8);
+			std::cout << sphereComponent.aabb.center.x << sphereComponent.aabb.center.y << sphereComponent.aabb.center.z << std::endl;
 			sphereComponent.sphere = BuildSphereFromAABB(aabb);
 		}
 	}

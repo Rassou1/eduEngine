@@ -217,6 +217,10 @@ public:
 
 			sphereComponent.Update(registry);
 			spheres.push_back(&sphereComponent.sphere);
+			//std::cout << "sphere added" << std::endl;
+			//std::cout << "X: " << sphereComponent.sphere.center.x << std::endl;
+			//std::cout << "Y: " << sphereComponent.sphere.center.y << std::endl;
+			//std::cout << "Z: " << sphereComponent.sphere.center.z << std::endl;
 		}
 		
 		auto root = BuildBVHBottomUp(spheres, 50.0f);
@@ -230,8 +234,8 @@ public:
 					SimpleContact* contact = SphereSphere(sphereComponent.sphere, *collision);
 					if (contact) {
 						SeparateSpheres(sphereComponent.sphere, *collision, contact->penetrationDepth);
-						eeng::Log("Collision detected between spheres");
-						std::cout << "Collision detected between spheres: " << sphereComponent.sphere.center.x << " and " << collision->center.x << std::endl;
+						/*eeng::Log("Collision detected between spheres");
+						std::cout << "Collision detected between spheres: " << sphereComponent.sphere.center.x << " and " << collision->center.x << std::endl;*/
 						delete contact;
 					}
 				}
