@@ -7,6 +7,7 @@
 #include "PlayerControllerSystem.hpp"
 #include "NPCControllerSystem.hpp"
 #include "NPCWaypointEditor.hpp"
+#include "ObserverComponent.hpp"
 
 
 bool Game::init()

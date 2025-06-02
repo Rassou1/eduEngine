@@ -231,7 +231,7 @@ public:
 					if (contact) {
 						SeparateSpheres(sphereComponent.sphere, *collision, contact->penetrationDepth);
 						eeng::Log("Collision detected between spheres");
-						std::cout << "Collision detected between spheres: " << sphereComponent.sphere.center.x << " and " << collision->center.x << std::endl;
+						//std::cout << "Collision detected between spheres: " << sphereComponent.sphere.center.x << " and " << collision->center.x << std::endl;
 						delete contact;
 					}
 				}
