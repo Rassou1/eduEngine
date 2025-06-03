@@ -1,9 +1,9 @@
 #pragma once
 #include <cstdint>
 #include <entt/entt.hpp>
-#include "SourceComponent.hpp"
 #include "EventHandler.hpp"
 #include "EventQueue.hpp"
+#include "Log.hpp"
 
 
 class ObserverComponent {

@@ -2,8 +2,6 @@
 #include <functional>
 #include "string"
 #include "array"
-#include "ObserverComponent.hpp"
-#include "SourceComponent.hpp"
 #include "EventHandler.hpp"
 
 using Listener = std::function<void(std::string)>;

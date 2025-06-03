@@ -1,4 +1,6 @@
 #pragma once
+#include <entt/entt.hpp>
+#include "EventHandler.hpp"
 #include "ObserverComponent.hpp"
 
 class SourceComponent {
@@ -36,7 +38,7 @@ public:
 	}
 };
 
-class HorseSource : SourceComponent {
+class HorseSource : public SourceComponent {
 public:
 	
 	HorseSource(entt::entity entity) : SourceComponent(entity) {

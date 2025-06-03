@@ -1,4 +1,3 @@
-#pragma once
 #include <entt/entt.hpp>
 #include "glmcommon.hpp"
 #include "imgui.h"
@@ -7,9 +6,9 @@
 #include "PlayerControllerSystem.hpp"
 #include "NPCControllerSystem.hpp"
 #include "NPCWaypointEditor.hpp"
-#include "ObserverComponent.hpp"
+#include "EventQueue.hpp"
 #include "SourceComponent.hpp"
-
+#include "BrushingComponent.hpp"
 
 bool Game::init()
 {
@@ -70,8 +69,7 @@ bool Game::init()
     entity_registry->emplace<MeshComponent>(characterEntity, MeshComponent(characterMesh, 25, characterAnimIndex, true));
 	entity_registry->emplace<PlayerControllerComponent>(characterEntity, PlayerControllerComponent());
 	entity_registry->emplace<FSMComponent>(characterEntity, FSMComponent(1, 2, 0.3f)); 
-	entity_registry->emplace<SphereComponent>(characterEntity, SphereComponent());
-
+	entity_registry->emplace<ColliderComponent>(characterEntity, ColliderComponent());
 #endif
 #if 0
     // Eve 5.0.1 PACK FBX
@@ -104,8 +102,9 @@ bool Game::init()
 	entity_registry->emplace<LinearVelocityComponent>(horseEntity, LinearVelocityComponent());
 	entity_registry->emplace<MeshComponent>(horseEntity, MeshComponent(horseMesh, 1, characterAnimIndex, true));
 	//entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
-	entity_registry->emplace<SphereComponent>(horseEntity, SphereComponent()); 
+	entity_registry->emplace<ColliderComponent>(horseEntity, ColliderComponent()); 
     entity_registry->emplace<SourceComponent>(horseEntity, HorseSource(horseEntity));
+	entity_registry->emplace<BrushingComponent>(horseEntity, BrushingComponent());
 
     return true;
 }
@@ -122,7 +121,7 @@ void Game::update(
     PlayerControllerSystem(entity_registry, input);
 	MovementSystem(entity_registry, deltaTime);
 	NPCControllerSystem(entity_registry);
-    collisionSystem.Update(entity_registry);
+    collisionSystem.Update(*entity_registry);
     renderSystem.ToggleBones(input);
     renderSystem.Update(entity_registry, deltaTime);
 

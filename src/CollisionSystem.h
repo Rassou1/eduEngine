@@ -1,7 +1,9 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "SphereComponent.hpp"
+#include "ColliderComponent.hpp"
 #include "Log.hpp"
+#include <cstdlib>
+#include <vector>
 
 struct SimpleContact {
 	uint32_t idA;
@@ -11,232 +13,433 @@ struct SimpleContact {
 	glm::vec3 contactNormal;
 };
 
-struct SphereNode {
-	Sphere* collisionRepresentation;
-	SphereNode* leftChild;
-	SphereNode* rightChild;
+struct SphereNode
+{
+	entt::entity entity = entt::null;
+	glm::vec3 center;
+	float radius;
+
+	SphereNode* left = nullptr;
+	SphereNode* right = nullptr;
+
+	bool isLeaf() const {
+		return left == nullptr && right == nullptr;
+	}
 };
 
 class CollisionSystem {
 
-	std::vector<SphereNode*> openList;
-	std::vector<Sphere*> spheres;
+	SphereNode* rootNode = nullptr;
+
 
 public:
 
 	CollisionSystem() {};
 
-	bool TestCollisionSphereSphere(const Sphere& sphereA, const Sphere& sphereB) 
+	bool CheckSphereCollision(const glm::vec3& center, float radius, const glm::vec3& otherCenter, float otherRadius) 
 	{
-		glm::vec3 centerToCenterDistance = sphereA.center - sphereB.center;
-		float distanceSquared = glm::dot(centerToCenterDistance, centerToCenterDistance);
-
-		float radiusSum = sphereA.radius + sphereB.radius;
-		return distanceSquared <= (radiusSum * radiusSum);
-
+		float distanceSquared = glm::dot(otherCenter - center, otherCenter - center);
+		float radiusSum = radius + otherRadius;
+		return distanceSquared <= radiusSum * radiusSum;
 	}
 
-	bool TestCollisionAABBAABB(const AABBCenterHalfWidths& aabbA, const AABBCenterHalfWidths& aabbB)
+	float CheckSphereDistance(SphereNode* sphere, SphereNode* otherSphere) {
+		float distanceBetweenCenters = glm::length(sphere->center - otherSphere->center);
+		return distanceBetweenCenters - (sphere->radius + otherSphere->radius);
+	}
+
+	void CheckSphereSphere(entt::registry* registry)
 	{
-		float centerDifference = aabbA.center[0] - aabbB.center[0];
-		float compoundedWidth = aabbA.halfWidths[0] + aabbB.halfWidths[0];
-		
-		if (centerDifference > compoundedWidth) {
-			return false;
-		}
+		auto view = registry->view<TransformComponent, ColliderComponent>();
+		for (auto entity : view) {
+			auto& transform = view.get<TransformComponent>(entity);
+			auto& collider = view.get<ColliderComponent>(entity);
 
-		centerDifference = aabbA.center[1] - aabbB.center[1];
-		compoundedWidth = aabbA.halfWidths[1] + aabbB.halfWidths[1];
-		
-		if (centerDifference > compoundedWidth) {
-			return false;
-		}
+			glm::vec3 center = transform.position + collider.sphere.center;
+			collider.sphere.isColliding = false;
 
-		centerDifference = aabbA.center[2] - aabbB.center[2];
-		compoundedWidth = aabbA.halfWidths[2] + aabbB.halfWidths[2];
+			for (auto otherEntity : view) {
+				if (entity == otherEntity) continue;
 
-		if (centerDifference > compoundedWidth) {
-			return false;
-		}
+				auto& otherTransform = view.get<TransformComponent>(otherEntity);
+				auto& otherCollider = view.get<ColliderComponent>(otherEntity);
 
-		return true;
-	}
+				glm::vec3 otherCenter = otherTransform.position + otherCollider.sphere.center;
 
-	void SeparateSpheres(Sphere& a, Sphere& b, float penetrationDepth) 
-	{
-		glm::vec3 collisionNormal = glm::normalize(b.center - a.center);
-		a.center -= collisionNormal * (penetrationDepth / 2.0f);
-		b.center += collisionNormal * (penetrationDepth / 2.0f);
-	}
-
-	SimpleContact* SphereSphere(Sphere& a, Sphere& b) 
-	{
-		glm::vec3 centerToCenterDistance = a.center - b.center;
-		float distance = glm::dot(centerToCenterDistance, centerToCenterDistance);
-		
-		float radiiSum = a.radius + b.radius;
-		
-		if (distance > radiiSum * radiiSum) {
-			return nullptr;
-		}
-
-		SimpleContact* contact = new SimpleContact();
-
-		contact->contactNormal = glm::normalize(centerToCenterDistance);
-		contact->contactPoint = a.center + contact->contactNormal * a.radius;
-		contact->penetrationDepth = radiiSum - glm::sqrt(distance);
-
-		return contact;
-
-	}
-
-	float DistanceBetweenCircles(Sphere* leftSphere, Sphere* rightSphere)
-	{
-		float centerToCenterDistance = glm::length(rightSphere->center - leftSphere->center);
-
-		float surfaceDistance = centerToCenterDistance - (leftSphere->radius + rightSphere->radius);
-
-		return (std::max(0.0f, surfaceDistance));
-	}
-
-	void FindMinMaxPoints(glm::vec3 leftCenter, glm::vec3 rightCenter, float leftRadius, float rightRadius, glm::vec3& minOut, glm::vec3& maxOut) {
-
-		minOut.x = std::min(leftCenter.x - leftRadius, rightCenter.x - rightRadius);
-		maxOut.x = std::max(leftCenter.x + leftRadius, rightCenter.x + rightRadius);
-
-		minOut.y = std::min(leftCenter.y - leftRadius, rightCenter.y - rightRadius);
-		maxOut.y = std::max(leftCenter.x + leftRadius, rightCenter.x + rightRadius);
-
-		minOut.z = std::min(leftCenter.z - leftRadius, rightCenter.z - rightRadius);
-		maxOut.z = std::max(leftCenter.z + leftRadius, rightCenter.z + rightRadius);
-	}
-
-	SphereNode* BuildNodeFromSingleSphere(Sphere* sphere) {
-		return new SphereNode{ sphere, nullptr, nullptr };
-	}
-
-	SphereNode* BuildNodeFromSpheres(Sphere* leftSphere, Sphere* rightSphere) {
-		glm::vec3 maxPoint, minPoint;
-		FindMinMaxPoints(leftSphere->center, rightSphere->center, leftSphere->radius, rightSphere->radius, minPoint, maxPoint);
-
-		glm::vec3 midPoint = (minPoint + (maxPoint - minPoint)) / 2.0f;
-		float radius = glm::length(maxPoint - midPoint) / 2.0f;
-
-		return new SphereNode{ new Sphere{midPoint, radius}, nullptr, nullptr };
-	}
-
-	std::vector<std::pair<SphereNode*, SphereNode*>> FindPairs(std::vector<SphereNode*>openList, float maxDistance) {
-		std::vector<std::pair<SphereNode*, SphereNode*>> allPairs;
-		std::vector<SphereNode*> availableSpheres = openList;
-
-		while (!availableSpheres.empty()) {
-			SphereNode* currentNode = availableSpheres.back();
-			availableSpheres.pop_back();
-
-			float closestDistance = maxDistance;
-			SphereNode* closestNode = nullptr;
-			int closestIndex = -1;
-
-			for (int i = 0; i < availableSpheres.size(); ++i) {
-				float distance = DistanceBetweenCircles(currentNode->collisionRepresentation, availableSpheres[i]->collisionRepresentation);
-
-				if (distance < closestDistance) {
-					closestDistance = distance;
-					closestNode = availableSpheres[i];
-					closestIndex = i;
+				if (CheckSphereCollision(center, collider.sphere.radius, otherCenter, otherCollider.sphere.radius)) 
+				{
+					collider.sphere.isColliding = true;
+					eeng::Log("Collision detected between: %d <-> %d", int(entity), int(otherEntity));
 				}
-			}
 
-			if (closestNode) {
-				availableSpheres.erase(availableSpheres.begin() + closestIndex);
 			}
-			allPairs.push_back({ currentNode, closestNode });
 		}
-		return allPairs;
 	}
 
-	SphereNode* BuildBVHBottomUp(std::vector<Sphere*> spheres, float maxDistanceBetweenLeaves) {
-		std::vector<SphereNode*> openList;
+	void BuildLeafNodes(entt::registry& registry) 
+	{
+		std::vector<SphereNode*> leafNodes;
 
-		for (Sphere* sphere : spheres) {
-			openList.push_back(BuildNodeFromSingleSphere(sphere));
+		auto view = registry.view<TransformComponent, ColliderComponent>();
+		for (auto entity : view) {
+			auto& transform = view.get<TransformComponent>(entity);
+			auto& collider = view.get<ColliderComponent>(entity);
+
+			glm::vec3 center = transform.position + collider.sphere.center;
+			float radius = collider.sphere.radius;
+
+			SphereNode* node = new SphereNode{ entity, center, radius };
+			leafNodes.push_back(node);
+
+			collider.sphere.isColliding = false;
 		}
 
-		while (openList.size() != 1)
+		rootNode = BuildBVHBottomUp(leafNodes, 2.0f);
+	}
+
+	SphereNode* BuildBVHBottomUp(std::vector<SphereNode*> sphereNodes, float maxInitialDistance) 
+	{
+		while (sphereNodes.size() > 1)
 		{
-			auto pairs = FindPairs(openList, maxDistanceBetweenLeaves);
-			openList.clear();
-			for (auto pair : pairs) {
-				if (pair.second) {
-					auto node = BuildNodeFromSpheres(pair.first->collisionRepresentation, pair.second->collisionRepresentation);
-					node->leftChild = pair.first;
-					node->rightChild = pair.second;
-					openList.push_back(node);
+			std::vector<SphereNode*> openList;
+
+			while (!sphereNodes.empty())
+			{
+				SphereNode* currentNode = sphereNodes.back();
+				sphereNodes.pop_back();
+
+				float closestDistance = maxInitialDistance;
+				SphereNode* closestNode = nullptr;
+				size_t closestIndex = -1;
+
+				for (size_t i = 0; i < sphereNodes.size(); ++i)
+				{
+					float distance = CheckSphereDistance(currentNode, sphereNodes[i]);
+					if (distance < closestDistance)
+					{
+						closestDistance = distance;
+						closestNode = sphereNodes[i];
+						closestIndex = i;
+
+					}
 				}
-				else {
-					auto node = BuildNodeFromSingleSphere(pair.first->collisionRepresentation);
-					node->leftChild = pair.first;
-					openList.push_back(node);
+
+				if (closestNode)
+				{
+					sphereNodes.erase(sphereNodes.begin() + closestIndex);
+					openList.push_back(CombineNodes(currentNode, closestNode));
+				}
+				else
+				{
+					openList.push_back(currentNode);
 				}
 			}
-			maxDistanceBetweenLeaves = std::numeric_limits<float>::max();
+
+			sphereNodes = openList;
+			maxInitialDistance = std::numeric_limits<float>::max();
 		}
-		return openList[0];
+
+		return sphereNodes.front();
 	}
 
-	std::vector<Sphere*> FindPossibleCollisions(SphereNode* treeRoot, Sphere* sphere) {
-		std::vector<Sphere*> possibleCollisions;
+	SphereNode* CombineNodes(SphereNode* leftSphere, SphereNode* rightSphere)
+	{
+		glm::vec3 minPoint = glm::min(leftSphere->center - glm::vec3(leftSphere->radius), rightSphere->center - glm::vec3(rightSphere->radius));
+		glm::vec3 maxPoint = glm::max(leftSphere->center + glm::vec3(leftSphere->radius), rightSphere->center + glm::vec3(rightSphere->radius));
+		glm::vec3 newCenter = (minPoint + maxPoint) * 0.5f;
+		float newRadius = glm::length(maxPoint - newCenter) * 0.5f;
 
-		if (!sphere || !treeRoot) {
-			return possibleCollisions;
-		}
+		SphereNode* newNode = new SphereNode{ entt::null, newCenter, newRadius };
+		newNode->left = leftSphere;
+		newNode->right = rightSphere;
 
-		if (!TestCollisionSphereSphere(*treeRoot->collisionRepresentation, *sphere)) {
-			return possibleCollisions;
-		}
-
-		if (treeRoot->leftChild == nullptr && treeRoot->rightChild == nullptr) {
-			possibleCollisions.push_back(treeRoot->collisionRepresentation);
-			return possibleCollisions;
-		}
-
-		auto collisions = FindPossibleCollisions(treeRoot->leftChild, sphere);
-		possibleCollisions.insert(possibleCollisions.end(), collisions.begin(), collisions.end());
-
-		collisions = FindPossibleCollisions(treeRoot->rightChild, sphere);
-		possibleCollisions.insert(possibleCollisions.end(), collisions.begin(), collisions.end());
-
-		return possibleCollisions;
+		return newNode;
 	}
 
-	void Update(std::shared_ptr<entt::registry> registry) {
-
-		auto view = registry->view<SphereComponent>();
-		for (auto entity : view) {
-			auto& sphereComponent = view.get<SphereComponent>(entity);
-
-			sphereComponent.Update(registry);
-			spheres.push_back(&sphereComponent.sphere);
+	void TraverseBVH(SphereNode* node, const glm::vec3& center, float radius, std::vector<entt::entity>& nodesHit) 
+	{
+		if (!node) {
+			return;
 		}
-		
-		auto root = BuildBVHBottomUp(spheres, 50.0f);
-		
-		for (auto entity : view) {
-			auto& sphereComponent = view.get<SphereComponent>(entity);
-			auto possibleCollisions = FindPossibleCollisions(root, &sphereComponent.sphere);
 
-			for (auto& collision : possibleCollisions) {
-				if (collision != &sphereComponent.sphere) {
-					SimpleContact* contact = SphereSphere(sphereComponent.sphere, *collision);
-					if (contact) {
-						SeparateSpheres(sphereComponent.sphere, *collision, contact->penetrationDepth);
-						eeng::Log("Collision detected between spheres");
-						//std::cout << "Collision detected between spheres: " << sphereComponent.sphere.center.x << " and " << collision->center.x << std::endl;
-						delete contact;
+		float distance = glm::length(node->center - center);
+		if (distance > (node->radius + radius)) return;
+
+
+		if (node->isLeaf()) {
+			eeng::Log(" -> broad phase hit entity: entiy %d", int(node->entity));
+			nodesHit.push_back(node->entity);
+		}
+		else {
+			TraverseBVH(node->left, center, radius,  nodesHit);
+			TraverseBVH(node->right, center, radius, nodesHit);
+		}
+	}
+
+	void CheckBroadAndNarrowPhase(entt::registry& registry) 
+	{
+		auto view = registry.view<TransformComponent, ColliderComponent>();
+		for (auto entity : view) {
+			auto& transform = view.get<TransformComponent>(entity);
+			auto& collider = view.get<ColliderComponent>(entity);
+
+			glm::vec3 center = transform.position + collider.sphere.center;
+			float radius = collider.sphere.radius;
+
+			std::vector<entt::entity> entities;
+			TraverseBVH(rootNode, center, radius, entities);
+
+			for (auto otherEntity : entities) {
+				if (otherEntity == entity) continue;
+
+				auto& otherTransform = view.get<TransformComponent>(otherEntity);
+				auto& otherCollider = view.get<ColliderComponent>(otherEntity);
+
+				glm::vec3 otherCenter = otherTransform.position + otherCollider.sphere.center;
+				float otherRadius = otherCollider.sphere.radius;
+
+				if (CheckSphereCollision(center, radius, otherCenter, otherRadius))
+				{
+					collider.sphere.isColliding = true;
+					otherCollider.sphere.isColliding = true;
+					eeng::Log("Collision detected between: %d <-> %d", int(entity), int(otherEntity));
+					float distance = glm::sqrt(glm::dot(otherCenter - center, otherCenter - center));
+					if (distance > 0.0001f)
+					{
+						float overlap = radius + otherRadius - distance;
+						glm::vec3 normal = glm::normalize(center - otherCenter);
+
+						glm::vec3 correction = normal * (overlap * 0.5f);
+
+						auto& transform = registry.get<TransformComponent>(entity);
+						auto& otherTransform = registry.get<TransformComponent>(otherEntity);
+
+						transform.position = (transform.position + correction);
+						otherTransform.position = (otherTransform.position - correction);
 					}
 				}
 			}
 		}
-
 	}
+
+	void Update(entt::registry& registry) {
+		BuildLeafNodes(registry);
+		CheckBroadAndNarrowPhase(registry);
+	}
+
+#pragma region CollisionFromPresentations
+	//bool TestCollisionSphereSphere(const Sphere& sphereA, const Sphere& sphereB) 
+	//{
+	//	glm::vec3 centerToCenterDistance = sphereA.center - sphereB.center;
+	//	float distanceSquared = glm::dot(centerToCenterDistance, centerToCenterDistance);
+
+	//	float radiusSum = sphereA.radius + sphereB.radius;
+	//	return distanceSquared <= (radiusSum * radiusSum);
+
+	//}
+
+	//bool TestCollisionAABBAABB(const AABBCenterHalfWidths& aabbA, const AABBCenterHalfWidths& aabbB)
+	//{
+	//	float centerDifference = aabbA.center[0] - aabbB.center[0];
+	//	float compoundedWidth = aabbA.halfWidths[0] + aabbB.halfWidths[0];
+	//	
+	//	if (centerDifference > compoundedWidth) {
+	//		return false;
+	//	}
+
+	//	centerDifference = aabbA.center[1] - aabbB.center[1];
+	//	compoundedWidth = aabbA.halfWidths[1] + aabbB.halfWidths[1];
+	//	
+	//	if (centerDifference > compoundedWidth) {
+	//		return false;
+	//	}
+
+	//	centerDifference = aabbA.center[2] - aabbB.center[2];
+	//	compoundedWidth = aabbA.halfWidths[2] + aabbB.halfWidths[2];
+
+	//	if (centerDifference > compoundedWidth) {
+	//		return false;
+	//	}
+
+	//	return true;
+	//}
+
+	//void SeparateSpheres(Sphere& a, Sphere& b, float penetrationDepth) 
+	//{
+	//	glm::vec3 collisionNormal = glm::normalize(b.center - a.center);
+	//	a.center -= collisionNormal * (penetrationDepth / 2.0f);
+	//	b.center += collisionNormal * (penetrationDepth / 2.0f);
+	//}
+
+	//SimpleContact* SphereSphere(Sphere& a, Sphere& b) 
+	//{
+	//	glm::vec3 centerToCenterDistance = a.center - b.center;
+	//	float distance = glm::dot(centerToCenterDistance, centerToCenterDistance);
+	//	
+	//	float radiiSum = a.radius + b.radius;
+	//	
+	//	if (distance > radiiSum * radiiSum) {
+	//		return nullptr;
+	//	}
+
+	//	SimpleContact* contact = new SimpleContact();
+
+	//	contact->contactNormal = glm::normalize(centerToCenterDistance);
+	//	contact->contactPoint = a.center + contact->contactNormal * a.radius;
+	//	contact->penetrationDepth = radiiSum - glm::sqrt(distance);
+
+	//	return contact;
+
+	//}
+
+	//float DistanceBetweenCircles(Sphere* leftSphere, Sphere* rightSphere)
+	//{
+	//	float centerToCenterDistance = glm::length(rightSphere->center - leftSphere->center);
+
+	//	float surfaceDistance = centerToCenterDistance - (leftSphere->radius + rightSphere->radius);
+
+	//	return (std::max(0.0f, surfaceDistance));
+	//}
+
+	//void FindMinMaxPoints(glm::vec3 leftCenter, glm::vec3 rightCenter, float leftRadius, float rightRadius, glm::vec3& minOut, glm::vec3& maxOut) {
+
+	//	minOut.x = std::min(leftCenter.x - leftRadius, rightCenter.x - rightRadius);
+	//	maxOut.x = std::max(leftCenter.x + leftRadius, rightCenter.x + rightRadius);
+
+	//	minOut.y = std::min(leftCenter.y - leftRadius, rightCenter.y - rightRadius);
+	//	maxOut.y = std::max(leftCenter.x + leftRadius, rightCenter.x + rightRadius);
+
+	//	minOut.z = std::min(leftCenter.z - leftRadius, rightCenter.z - rightRadius);
+	//	maxOut.z = std::max(leftCenter.z + leftRadius, rightCenter.z + rightRadius);
+	//}
+
+	//SphereNode* BuildNodeFromSingleSphere(Sphere* sphere) {
+	//	return new SphereNode{ sphere, nullptr, nullptr };
+	//}
+
+	//SphereNode* BuildNodeFromSpheres(Sphere* leftSphere, Sphere* rightSphere) {
+	//	glm::vec3 maxPoint, minPoint;
+	//	FindMinMaxPoints(leftSphere->center, rightSphere->center, leftSphere->radius, rightSphere->radius, minPoint, maxPoint);
+
+	//	glm::vec3 midPoint = (minPoint + (maxPoint - minPoint)) / 2.0f;
+	//	float radius = glm::length(maxPoint - midPoint) / 2.0f;
+
+	//	return new SphereNode{ new Sphere{midPoint, radius}, nullptr, nullptr };
+	//}
+
+	//std::vector<std::pair<SphereNode*, SphereNode*>> FindPairs(std::vector<SphereNode*>openList, float maxDistance) {
+	//	std::vector<std::pair<SphereNode*, SphereNode*>> allPairs;
+	//	std::vector<SphereNode*> availableSpheres = openList;
+
+	//	while (!availableSpheres.empty()) {
+	//		SphereNode* currentNode = availableSpheres.back();
+	//		availableSpheres.pop_back();
+
+	//		float closestDistance = maxDistance;
+	//		SphereNode* closestNode = nullptr;
+	//		int closestIndex = -1;
+
+	//		for (int i = 0; i < availableSpheres.size(); ++i) {
+	//			float distance = DistanceBetweenCircles(currentNode->collisionRepresentation, availableSpheres[i]->collisionRepresentation);
+
+	//			if (distance < closestDistance) {
+	//				closestDistance = distance;
+	//				closestNode = availableSpheres[i];
+	//				closestIndex = i;
+	//			}
+	//		}
+
+	//		if (closestNode) {
+	//			availableSpheres.erase(availableSpheres.begin() + closestIndex);
+	//		}
+	//		allPairs.push_back({ currentNode, closestNode });
+	//	}
+	//	return allPairs;
+	//}
+
+	//SphereNode* BuildBVHBottomUp(std::vector<Sphere*> spheres, float maxDistanceBetweenLeaves) {
+	//	std::vector<SphereNode*> openList;
+
+	//	for (Sphere* sphere : spheres) {
+	//		openList.push_back(BuildNodeFromSingleSphere(sphere));
+	//	}
+
+	//	while (openList.size() != 1)
+	//	{
+	//		auto pairs = FindPairs(openList, maxDistanceBetweenLeaves);
+	//		openList.clear();
+	//		for (auto pair : pairs) {
+	//			if (pair.second) {
+	//				auto node = BuildNodeFromSpheres(pair.first->collisionRepresentation, pair.second->collisionRepresentation);
+	//				node->leftChild = pair.first;
+	//				node->rightChild = pair.second;
+	//				openList.push_back(node);
+	//			}
+	//			else {
+	//				auto node = BuildNodeFromSingleSphere(pair.first->collisionRepresentation);
+	//				node->leftChild = pair.first;
+	//				openList.push_back(node);
+	//			}
+	//		}
+	//		maxDistanceBetweenLeaves = std::numeric_limits<float>::max();
+	//	}
+	//	return openList[0];
+	//}
+
+	//std::vector<Sphere*> FindPossibleCollisions(SphereNode* treeRoot, Sphere* sphere) {
+	//	std::vector<Sphere*> possibleCollisions;
+
+	//	if (!sphere || !treeRoot) {
+	//		return possibleCollisions;
+	//	}
+
+	//	if (!TestCollisionSphereSphere(*treeRoot->collisionRepresentation, *sphere)) {
+	//		return possibleCollisions;
+	//	}
+
+	//	if (treeRoot->leftChild == nullptr && treeRoot->rightChild == nullptr) {
+	//		possibleCollisions.push_back(treeRoot->collisionRepresentation);
+	//		return possibleCollisions;
+	//	}
+
+	//	auto collisions = FindPossibleCollisions(treeRoot->leftChild, sphere);
+	//	possibleCollisions.insert(possibleCollisions.end(), collisions.begin(), collisions.end());
+
+	//	collisions = FindPossibleCollisions(treeRoot->rightChild, sphere);
+	//	possibleCollisions.insert(possibleCollisions.end(), collisions.begin(), collisions.end());
+
+	//	return possibleCollisions;
+	//}
+
+	//void Update(std::shared_ptr<entt::registry> registry) {
+
+	//	auto view = registry->view<SphereComponent>();
+	//	for (auto entity : view) {
+	//		auto& sphereComponent = view.get<SphereComponent>(entity);
+
+	//		sphereComponent.Update(registry);
+	//		spheres.push_back(&sphereComponent.sphere);
+	//	}
+	//	
+	//	auto root = BuildBVHBottomUp(spheres, 50.0f);
+	//	
+	//	for (auto entity : view) {
+	//		auto& sphereComponent = view.get<SphereComponent>(entity);
+	//		auto possibleCollisions = FindPossibleCollisions(root, &sphereComponent.sphere);
+
+	//		for (auto& collision : possibleCollisions) {
+	//			if (collision != &sphereComponent.sphere) {
+	//				SimpleContact* contact = SphereSphere(sphereComponent.sphere, *collision);
+	//				if (contact) {
+	//					SeparateSpheres(sphereComponent.sphere, *collision, contact->penetrationDepth);
+	//					eeng::Log("Collision detected between spheres");
+	//					//std::cout << "Collision detected between spheres: " << sphereComponent.sphere.center.x << " and " << collision->center.x << std::endl;
+	//					delete contact;
+	//				}
+	//			}
+	//		}
+	//	}
+
+	//}
+#pragma endregion
 };

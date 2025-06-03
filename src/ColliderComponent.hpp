@@ -3,17 +3,21 @@
 #include <vector>
 
 struct Sphere {
+	bool isColliding = false;
+	bool isTrigger = false;
+
 	glm::vec3 center;
 	float radius;
 };
 
 struct AABBCenterHalfWidths {
+	bool isColliding = false;
 	glm::vec3 center;
 	float halfWidths[3];
 };
 
 
-class SphereComponent {
+class ColliderComponent {
 
 public:
 
@@ -135,18 +139,18 @@ public:
 	Sphere sphere;
 	AABBCenterHalfWidths aabb;
 
-	SphereComponent() {};
+	ColliderComponent() {};
 
-	void Update(std::shared_ptr<entt::registry> registry) {
+	//void Update(std::shared_ptr<entt::registry> registry) {
 
-		auto view = registry->view<SphereComponent>();
-		for (auto entity : view) {
-			auto& sphereComponent = view.get<SphereComponent>(entity);
-			auto& transform = registry->get<TransformComponent>(entity);
+	//	auto view = registry->view<SphereComponent>();
+	//	for (auto entity : view) {
+	//		auto& sphereComponent = view.get<SphereComponent>(entity);
+	//		auto& transform = registry->get<TransformComponent>(entity);
 
-			sphereComponent.aabb = BuildAABBFromPoints(transform.GetAABBPoints(), 8);
-			sphereComponent.sphere = BuildSphereFromAABB(aabb);
-			//std::cout << sphereComponent.sphere.center.x << " " << sphereComponent.sphere.center.y << " " << sphereComponent.sphere.center.z << std::endl;
-		}
-	}
+	//		sphereComponent.aabb = BuildAABBFromPoints(transform.GetAABBPoints(), 8);
+	//		sphereComponent.sphere = BuildSphereFromAABB(aabb);
+	//		std::cout << sphereComponent.sphere.center.x << " " << sphereComponent.sphere.center.y << " " << sphereComponent.sphere.center.z << std::endl;
+	//	}
+	//}
 };
