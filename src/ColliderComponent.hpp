@@ -160,10 +160,10 @@ public:
 			sphereComponent.aabb.center = (meshComponent.mesh->m_model_aabb.max + meshComponent.mesh->m_model_aabb.max) * 0.5f;
 			for (int i = 0; i < 3; ++i) {
 				sphereComponent.aabb.halfWidths[i] = (meshComponent.mesh->m_model_aabb.max[i] - meshComponent.mesh->m_model_aabb.min[i]) * 0.5f;
-				std::cout << "Halfwidth: " << aabb.halfWidths[i] << std::endl;
+				std::cout << "Halfwidth: " << sphereComponent.aabb.halfWidths[i] << std::endl;
 			}
 			//sphereComponent.aabb = BuildAABBFromPoints(transform.GetAABBPoints(), 8);
-			sphereComponent.sphere = BuildSphereFromAABB(aabb);
+			sphereComponent.sphere = BuildSphereFromAABB(sphereComponent.aabb);
 
 			std::cout << "Final collider for entity " << int(entity) << ":\n";
 			std::cout << "AABB Center: (" << sphereComponent.aabb.center.x << ", "
