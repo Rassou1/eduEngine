@@ -1,76 +1,73 @@
 #pragma once
 #include <cstdint>
 #include <entt/entt.hpp>
+#include "SourceComponent.hpp"
+#include "EventHandler.hpp"
+#include "EventQueue.hpp"
 
-enum Events : std::uint8_t
-{
-	EVENT_HORSE_HUNGRY,
-	EVENT_FEED_HORSE,
-};
 
 class ObserverComponent {
 public:
 	virtual ~ObserverComponent() = default;
 
-	virtual void OnNotify(entt::entity& entity, Events event) = 0;
+	virtual void OnNotify(entt::entity entity, EventTypes event) = 0;
 };
 
-class SourceComponent {
-private:
-	ObserverComponent* observers[256];
-	int numberOfObservers = 0;
-	entt::entity* sourceEntity;
-protected:
-	void Notify(Events event) {
-		for (int i = 0; i < numberOfObservers; ++i) {
-			observers[i]->OnNotify(*sourceEntity, event);
-		}
-	}
+
+
+class QuestObserver : ObserverComponent {
 public:
-	SourceComponent(entt::entity* entity) : sourceEntity(entity) {
-		for (int i = 0; i < 256; ++i) {
-			observers[i] = nullptr;
+
+	void update(const EventQueue& eventQueue) {
+		for (const auto& event : eventQueue.getEvents())
+		{
+			OnNotify(event.sender, event.type);
 		}
 	}
-	void AddObserver(ObserverComponent* observer) {
-		if (numberOfObservers < 256) {
-			observers[numberOfObservers++] = observer;
-		}
+
+	enum class QuestProgression {
+		NotStarted,
+		Started,
+		HorseNeedsBrushing,
+		BrushInInventory,
+		BrushingHorse,
+		QuestCompleted
 	};
-	void RemoveObserver(ObserverComponent* observer) {
-		for (int i = 0; i < numberOfObservers; ++i) {
-			if (observers[i] == observer) {
-				observers[i] = observers[--numberOfObservers];
-				return;
-			}
-		}
-	}
-};
 
-class PlayerObserver : ObserverComponent {
-public:
-	void OnNotify(entt::entity& source, Events event) override {
+	QuestProgression getProgress() const {
+		return progress;
+	}
+
+	void OnNotify(entt::entity source, EventTypes event) override {
+		
 		switch (event) {
-		case EVENT_HORSE_HUNGRY:
-			// Handle horse hungry event
+		case EventTypes::EVENT_STARTED_QUEST:
+			progress = QuestProgression::Started;
+			eeng::Log("Quest started by entity %d", int(source));
 			break;
-		case EVENT_FEED_HORSE:
-			// Handle feed horse event
+		case EventTypes::EVENT_HORSE_UNKEMPT:
+			progress = QuestProgression::HorseNeedsBrushing;
+			eeng::Log("Horse needs brushing");
+			break;
+		case EventTypes::EVENT_BRUSH_FOUND:
+			progress = QuestProgression::BrushInInventory;
+			eeng::Log("Brush picked up by entity %d", int(source));
+			break;
+		case EventTypes::EVENT_BRUSH_HORSE:
+			progress = QuestProgression::BrushingHorse;
+			eeng::Log("Horse brushed by entity %d", int(source));
+			break;
+		case EventTypes::EVENT_HORSE_BRUSHED:
+			progress = QuestProgression::QuestCompleted;
+			eeng::Log("Quest complete.");
 			break;
 		default:
 			break;
 		}
+
 	}
+
+private:
+	QuestProgression progress = QuestProgression::NotStarted;
 };
 
-class HorseSource : SourceComponent {
-public:
-
-	void HorseHungry() {
-		Notify(EVENT_HORSE_HUNGRY);
-	}
-
-	void FeedHorse() {
-		Notify(EVENT_FEED_HORSE);
-	}
-};

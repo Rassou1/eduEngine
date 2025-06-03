@@ -146,7 +146,7 @@ public:
 
 			sphereComponent.aabb = BuildAABBFromPoints(transform.GetAABBPoints(), 8);
 			sphereComponent.sphere = BuildSphereFromAABB(aabb);
-			std::cout << sphereComponent.sphere.center.x << " " << sphereComponent.sphere.center.y << " " << sphereComponent.sphere.center.z << std::endl;
+			//std::cout << sphereComponent.sphere.center.x << " " << sphereComponent.sphere.center.y << " " << sphereComponent.sphere.center.z << std::endl;
 		}
 	}
 };

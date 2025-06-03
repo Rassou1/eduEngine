@@ -2,6 +2,9 @@
 #include <functional>
 #include "string"
 #include "array"
+#include "ObserverComponent.hpp"
+#include "SourceComponent.hpp"
+#include "EventHandler.hpp"
 
 using Listener = std::function<void(std::string)>;
 class EventQueue {
@@ -10,12 +13,30 @@ private:
 	std::array<std::string, 256> queuedEvents;
 	std::uint8_t numberOfQueuedEvents;	
 
+	std::vector<Event> events;
+
 public:
 	EventQueue() {
 		numberOfQueuedEvents = 0;
 		int ID = 0;
 		for (auto &pair : listeners) {
 			pair.first = ID++;
+		}
+	}
+
+	std::vector<Event> getEvents() const {
+		return events;
+	}
+
+	void push(const Event& event) {
+		events.push_back(event);
+	}
+
+	void clear() {
+		events.clear();
+		numberOfQueuedEvents = 0;
+		for (auto& pair : listeners) {
+			pair.second = nullptr;
 		}
 	}
 
@@ -38,6 +59,7 @@ public:
 		if (numberOfQueuedEvents = 255) return;
 		queuedEvents[numberOfQueuedEvents++] = event;
 	}
+
 	void BroadcastAllEvents() {
 		for (int i = 0; i != numberOfQueuedEvents; ++i) {
 			for (auto& pair : listeners) {

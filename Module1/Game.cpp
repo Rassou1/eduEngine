@@ -8,6 +8,7 @@
 #include "NPCControllerSystem.hpp"
 #include "NPCWaypointEditor.hpp"
 #include "ObserverComponent.hpp"
+#include "SourceComponent.hpp"
 
 
 bool Game::init()
@@ -104,6 +105,7 @@ bool Game::init()
 	entity_registry->emplace<MeshComponent>(horseEntity, MeshComponent(horseMesh, 1, characterAnimIndex, true));
 	//entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
 	entity_registry->emplace<SphereComponent>(horseEntity, SphereComponent()); 
+    entity_registry->emplace<SourceComponent>(horseEntity, HorseSource(horseEntity));
 
     return true;
 }
