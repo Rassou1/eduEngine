@@ -98,7 +98,7 @@ bool Game::init()
         { 0.01f, 0.01f, 0.01f });*/
 
 	auto horseEntity = entity_registry->create();
-	entity_registry->emplace<TransformComponent>(horseEntity, TransformComponent(glm::vec3(30,0,-35), glm::vec3(0.01, 0.01, 0.01), glm::vec3(0,35,0)));
+	entity_registry->emplace<TransformComponent>(horseEntity, TransformComponent(glm::vec3(5,0,-5), glm::vec3(0.01, 0.01, 0.01), glm::vec3(0,35,0)));
 	entity_registry->emplace<LinearVelocityComponent>(horseEntity, LinearVelocityComponent());
 	entity_registry->emplace<MeshComponent>(horseEntity, MeshComponent(horseMesh, 1, characterAnimIndex, true));
 	//entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
@@ -120,8 +120,11 @@ void Game::update(
 
     PlayerControllerSystem(entity_registry, input);
 	MovementSystem(entity_registry, deltaTime);
-	NPCControllerSystem(entity_registry);
+
     collisionSystem.Update(*entity_registry);
+
+	NPCControllerSystem(entity_registry);
+
     renderSystem.ToggleBones(input);
     renderSystem.Update(entity_registry, deltaTime);
 

@@ -5,13 +5,13 @@
 #include <cstdlib>
 #include <vector>
 
-struct SimpleContact {
-	uint32_t idA;
-	uint32_t idB;
-	float penetrationDepth;
-	glm::vec3 contactPoint;
-	glm::vec3 contactNormal;
-};
+//struct SimpleContact {
+//	uint32_t idA;
+//	uint32_t idB;
+//	float penetrationDepth;
+//	glm::vec3 contactPoint;
+//	glm::vec3 contactNormal;
+//};
 
 struct SphereNode
 {
@@ -30,7 +30,6 @@ struct SphereNode
 class CollisionSystem {
 
 	SphereNode* rootNode = nullptr;
-
 
 public:
 
@@ -178,6 +177,8 @@ public:
 
 	void CheckBroadAndNarrowPhase(entt::registry& registry) 
 	{
+		if (!rootNode)
+			return;
 		auto view = registry.view<TransformComponent, ColliderComponent>();
 		for (auto entity : view) {
 			auto& transform = view.get<TransformComponent>(entity);
@@ -223,6 +224,12 @@ public:
 	}
 
 	void Update(entt::registry& registry) {
+		auto view = registry.view<ColliderComponent>();
+			for (auto entity : view) {
+				auto& sphereComponent = view.get<ColliderComponent>(entity);
+
+				sphereComponent.Update(registry);
+			}
 		BuildLeafNodes(registry);
 		CheckBroadAndNarrowPhase(registry);
 	}

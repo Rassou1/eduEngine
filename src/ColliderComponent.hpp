@@ -6,14 +6,14 @@ struct Sphere {
 	bool isColliding = false;
 	bool isTrigger = false;
 
-	glm::vec3 center;
-	float radius;
+	glm::vec3 center = { 0.0f, 0.0f, 0.0f };
+	float radius = 1.0f;
 };
 
 struct AABBCenterHalfWidths {
 	bool isColliding = false;
-	glm::vec3 center;
-	float halfWidths[3];
+	glm::vec3 center { 0.0f, 0.0f, 0.0f };
+	float halfWidths[3] { 1.0f, 1.0f, 1.0f };
 };
 
 
@@ -108,16 +108,24 @@ public:
 	{
 		auto minMaxVectors = FindMinMaxValues(points, numberOfPoints);
 
-		glm::vec3 minPoint = (*points[minMaxVectors[0].x], *points[minMaxVectors[1].x], *points[minMaxVectors[2].x]);
+		glm::vec3 minPoint(
+			points[minMaxVectors[0].x]->x,
+			points[minMaxVectors[1].x]->y,
+			points[minMaxVectors[2].x]->z
+		);
 
-		glm::vec3 maxPoint = (*points[minMaxVectors[0].y], *points[minMaxVectors[1].y], *points[minMaxVectors[2].x]);
+		glm::vec3 maxPoint(
+			points[minMaxVectors[0].y]->x,
+			points[minMaxVectors[1].y]->y,
+			points[minMaxVectors[2].y]->z
+		);
 
 		AABBCenterHalfWidths aabb;
 
-		aabb.center = (minPoint + maxPoint) / 2.0f;
+		aabb.center = (minPoint + maxPoint) * 0.5f;
 
 		for (int i = 0; i != 3; ++i) {
-			aabb.halfWidths[i] = (maxPoint[i] - minPoint[i]) / 2.0f;
+			aabb.halfWidths[i] = (maxPoint[i] - minPoint[i]) * 0.5f;
 		}
 
 		return aabb;
@@ -141,16 +149,29 @@ public:
 
 	ColliderComponent() {};
 
-	//void Update(std::shared_ptr<entt::registry> registry) {
+	void Update(entt::registry& registry) {
 
-	//	auto view = registry->view<SphereComponent>();
-	//	for (auto entity : view) {
-	//		auto& sphereComponent = view.get<SphereComponent>(entity);
-	//		auto& transform = registry->get<TransformComponent>(entity);
+		auto view = registry.view<ColliderComponent>();
+		for (auto entity : view) {
+			auto& sphereComponent = view.get<ColliderComponent>(entity);
+			auto& transform = registry.get<TransformComponent>(entity);
+			auto& meshComponent = registry.get<MeshComponent>(entity);
 
-	//		sphereComponent.aabb = BuildAABBFromPoints(transform.GetAABBPoints(), 8);
-	//		sphereComponent.sphere = BuildSphereFromAABB(aabb);
-	//		std::cout << sphereComponent.sphere.center.x << " " << sphereComponent.sphere.center.y << " " << sphereComponent.sphere.center.z << std::endl;
-	//	}
-	//}
+			sphereComponent.aabb.center = (meshComponent.mesh->m_model_aabb.max + meshComponent.mesh->m_model_aabb.max) * 0.5f;
+			for (int i = 0; i < 3; ++i) {
+				sphereComponent.aabb.halfWidths[i] = (meshComponent.mesh->m_model_aabb.max[i] - meshComponent.mesh->m_model_aabb.min[i]) * 0.5f;
+				std::cout << "Halfwidth: " << aabb.halfWidths[i] << std::endl;
+			}
+			//sphereComponent.aabb = BuildAABBFromPoints(transform.GetAABBPoints(), 8);
+			sphereComponent.sphere = BuildSphereFromAABB(aabb);
+
+			std::cout << "Final collider for entity " << int(entity) << ":\n";
+			std::cout << "AABB Center: (" << sphereComponent.aabb.center.x << ", "
+				<< sphereComponent.aabb.center.y << ", "
+				<< sphereComponent.aabb.center.z << ")\n";
+			std::cout << "Sphere Center: (" << sphereComponent.sphere.center.x << ", "
+				<< sphereComponent.sphere.center.y << ", "
+				<< sphereComponent.sphere.center.z << ")\n";
+		}
+	}
 };

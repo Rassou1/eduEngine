@@ -54,7 +54,7 @@ public:
 	}
 
 	void EnqueueEvent(std::string event) {
-		if (numberOfQueuedEvents = 255) return;
+		if (numberOfQueuedEvents == 255) return;
 		queuedEvents[numberOfQueuedEvents++] = event;
 	}
 
