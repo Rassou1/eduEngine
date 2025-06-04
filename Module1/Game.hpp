@@ -9,7 +9,9 @@
 #include "ShapeRenderer.hpp"
 #include "RenderSystem.hpp"
 #include "CollisionSystem.h"
-#include "AABBCollisionSystem.hpp"
+#include "EventQueue.hpp"
+#include "ObserverComponent.hpp"
+#include "SourceComponent.hpp"
 
 /// @brief A Game may hold, update and render 3D geometry and GUI elements
 class Game : public eeng::GameBase
@@ -129,6 +131,11 @@ private:
 
     RenderSystem renderSystem;
 	SphereCollisionSystem collisionSystem;
+
+    EventQueue eventQueue;
+    QuestObserver* questObserver = nullptr;
+    SourceComponent* sourceComponent = nullptr;
+
     float animBlend;
     int characterAnimIndex2 = 2;
 };

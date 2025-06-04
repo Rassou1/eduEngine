@@ -39,6 +39,7 @@ bool Game::init()
 
     // Character
     characterMesh = std::make_shared<eeng::RenderableMesh>();
+
 #if 0
     // Character
     characterMesh->load("assets/Ultimate Platformer Pack/Character/Character.fbx", false);
@@ -70,6 +71,8 @@ bool Game::init()
 	entity_registry->emplace<PlayerControllerComponent>(characterEntity, PlayerControllerComponent());
 	entity_registry->emplace<FSMComponent>(characterEntity, FSMComponent(1, 2, 0.3f)); 
 	entity_registry->emplace<ColliderComponent>(characterEntity, ColliderComponent());
+
+  
 #endif
 #if 0
     // Eve 5.0.1 PACK FBX
@@ -82,7 +85,9 @@ bool Game::init()
     // Remove root motion
     characterMesh->removeTranslationKeys("mixamorig:Hips");
 #endif
-
+    questObserver = new QuestObserver();
+    sourceComponent = new SourceComponent(characterEntity);
+    sourceComponent->AddObserver(questObserver);
     /*grassWorldMatrix = glm_aux::TRS(
         { 0.0f, 0.0f, 0.0f },
         0.0f, { 0, 1, 0 },
@@ -101,9 +106,9 @@ bool Game::init()
 	entity_registry->emplace<TransformComponent>(horseEntity, TransformComponent(glm::vec3(5,0,-5), glm::vec3(0.01, 0.01, 0.01), glm::vec3(0,35,0)));
 	entity_registry->emplace<LinearVelocityComponent>(horseEntity, LinearVelocityComponent());
 	entity_registry->emplace<MeshComponent>(horseEntity, MeshComponent(horseMesh, 1, characterAnimIndex, true));
-	//entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
+	entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
 	entity_registry->emplace<ColliderComponent>(horseEntity, ColliderComponent()); 
-    entity_registry->emplace<SourceComponent>(horseEntity, HorseSource(horseEntity));
+    //entity_registry->emplace<SourceComponent>(horseEntity, HorseSource(horseEntity));
     entity_registry->emplace<BrushingComponent>(horseEntity, BrushingComponent());
 
     return true;
@@ -125,8 +130,16 @@ void Game::update(
 
     collisionSystem.Update(entity_registry);
 
-	//NPCControllerSystem(entity_registry);
+	NPCControllerSystem(entity_registry);
 
+    using key = eeng::InputManager::Key;
+    
+    if (input->IsKeyPressed(key::E))
+    {
+        sourceComponent->Notify(EVENT_STARTED_QUEST);
+    }
+
+    questObserver->update(eventQueue);
 
 
     pointlight.pos = glm::vec3(
@@ -202,7 +215,7 @@ void Game::render(
     //// Horse
     //horseMesh->animate(3, time);
     //forwardRenderer->renderMesh(horseMesh, horseWorldMatrix);
-    horse_aabb = horseMesh->m_model_aabb.post_transform(horseWorldMatrix);
+    //horse_aabb = horseMesh->m_model_aabb.post_transform(horseWorldMatrix);
 
     // Character, instance 1
     //characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);

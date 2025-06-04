@@ -18,6 +18,7 @@ struct SphereNode {
 	Sphere* collisionRepresentation = nullptr;
 	SphereNode* leftChild = nullptr;
 	SphereNode* rightChild = nullptr;
+	bool isTrigger;
 };
 
 //struct SphereNode

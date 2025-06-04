@@ -15,7 +15,7 @@ public:
 
 
 
-class QuestObserver : ObserverComponent {
+class QuestObserver : public ObserverComponent {
 public:
 
 	void update(const EventQueue& eventQueue) {

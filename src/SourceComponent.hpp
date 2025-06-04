@@ -11,15 +11,16 @@ protected:
 	int numberOfObservers = 0;
 	ObserverComponent* observers[256];	
 
-	void Notify(EventTypes event) {
-		for (int i = 0; i < numberOfObservers; ++i) {
-			observers[i]->OnNotify(sourceEntity, event);
-		}
-	}
+	
 public:
 	SourceComponent(entt::entity entity) : sourceEntity(entity) {
 		for (int i = 0; i < 256; ++i) {
 			observers[i] = nullptr;
+		}
+	}
+	void Notify(EventTypes event) {
+		for (int i = 0; i < numberOfObservers; ++i) {
+			observers[i]->OnNotify(sourceEntity, event);
 		}
 	}
 	void AddObserver(ObserverComponent* observer) {
@@ -41,11 +42,11 @@ public:
 class HorseSource : public SourceComponent {
 public:
 	
-	HorseSource(entt::entity entity) : SourceComponent(entity) {
+	/*HorseSource(entt::entity entity) : SourceComponent(entity) {
 		for (int i = 0; i < 256; ++i) {
 			observers[i] = nullptr;
 		}
-	}
+	}*/
 	void HorseHungry() {
 		Notify(EVENT_HORSE_UNKEMPT);	
 	}
