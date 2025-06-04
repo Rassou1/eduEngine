@@ -9,6 +9,7 @@
 #include "ShapeRenderer.hpp"
 #include "RenderSystem.hpp"
 #include "CollisionSystem.h"
+#include "AABBCollisionSystem.hpp"
 
 /// @brief A Game may hold, update and render 3D geometry and GUI elements
 class Game : public eeng::GameBase
@@ -127,7 +128,7 @@ private:
         InputManagerPtr input);
 
     RenderSystem renderSystem;
-	CollisionSystem collisionSystem;
+	SphereCollisionSystem collisionSystem;
     float animBlend;
     int characterAnimIndex2 = 2;
 };

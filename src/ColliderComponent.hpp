@@ -3,15 +3,15 @@
 #include <vector>
 
 struct Sphere {
-	bool isColliding = false;
-	bool isTrigger = false;
-
 	glm::vec3 center = { 0.0f, 0.0f, 0.0f };
 	float radius = 1.0f;
+	entt::entity parent;
+	//bool isColliding = false;
+	//bool isTrigger = false;
 };
 
 struct AABBCenterHalfWidths {
-	bool isColliding = false;
+	//bool isColliding = false;
 	glm::vec3 center { 0.0f, 0.0f, 0.0f };
 	float halfWidths[3] { 1.0f, 1.0f, 1.0f };
 };
@@ -157,21 +157,12 @@ public:
 			auto& transform = registry.get<TransformComponent>(entity);
 			auto& meshComponent = registry.get<MeshComponent>(entity);
 
-			sphereComponent.aabb.center = (meshComponent.mesh->m_model_aabb.max + meshComponent.mesh->m_model_aabb.max) * 0.5f;
+			sphereComponent.aabb.center = (meshComponent.aabb.max + meshComponent.aabb.max) * 0.5f;
 			for (int i = 0; i < 3; ++i) {
-				sphereComponent.aabb.halfWidths[i] = (meshComponent.mesh->m_model_aabb.max[i] - meshComponent.mesh->m_model_aabb.min[i]) * 0.5f;
-				std::cout << "Halfwidth: " << sphereComponent.aabb.halfWidths[i] << std::endl;
+				sphereComponent.aabb.halfWidths[i] = (meshComponent.aabb.max[i] - meshComponent.aabb.min[i]) * 0.5f;
 			}
-			//sphereComponent.aabb = BuildAABBFromPoints(transform.GetAABBPoints(), 8);
 			sphereComponent.sphere = BuildSphereFromAABB(sphereComponent.aabb);
-
-			std::cout << "Final collider for entity " << int(entity) << ":\n";
-			std::cout << "AABB Center: (" << sphereComponent.aabb.center.x << ", "
-				<< sphereComponent.aabb.center.y << ", "
-				<< sphereComponent.aabb.center.z << ")\n";
-			std::cout << "Sphere Center: (" << sphereComponent.sphere.center.x << ", "
-				<< sphereComponent.sphere.center.y << ", "
-				<< sphereComponent.sphere.center.z << ")\n";
+			sphereComponent.sphere.parent = entity;
 		}
 	}
 };

@@ -37,6 +37,7 @@
 		std::shared_ptr<eeng::RenderableMesh> mesh;
 		float axleLength = 1;
 		int animationIndex = 0;
+		eeng::AABB aabb;
 	};
 
 

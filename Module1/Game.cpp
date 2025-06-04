@@ -104,7 +104,7 @@ bool Game::init()
 	//entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
 	entity_registry->emplace<ColliderComponent>(horseEntity, ColliderComponent()); 
     entity_registry->emplace<SourceComponent>(horseEntity, HorseSource(horseEntity));
-	entity_registry->emplace<BrushingComponent>(horseEntity, BrushingComponent());
+    entity_registry->emplace<BrushingComponent>(horseEntity, BrushingComponent());
 
     return true;
 }
@@ -117,16 +117,17 @@ void Game::update(
     updateCamera(input);
 
     //updatePlayer(deltaTime, input);
+    renderSystem.ToggleBones(input);
+    renderSystem.Update(entity_registry, deltaTime);
 
     PlayerControllerSystem(entity_registry, input);
 	MovementSystem(entity_registry, deltaTime);
 
-    collisionSystem.Update(*entity_registry);
+    collisionSystem.Update(entity_registry);
 
-	NPCControllerSystem(entity_registry);
+	//NPCControllerSystem(entity_registry);
 
-    renderSystem.ToggleBones(input);
-    renderSystem.Update(entity_registry, deltaTime);
+
 
     pointlight.pos = glm::vec3(
         glm_aux::R(time * 0.1f, { 0.0f, 1.0f, 0.0f }) *
@@ -201,7 +202,7 @@ void Game::render(
     //// Horse
     //horseMesh->animate(3, time);
     //forwardRenderer->renderMesh(horseMesh, horseWorldMatrix);
-    //horse_aabb = horseMesh->m_model_aabb.post_transform(horseWorldMatrix);
+    horse_aabb = horseMesh->m_model_aabb.post_transform(horseWorldMatrix);
 
     // Character, instance 1
     //characterMesh->animate(characterAnimIndex, time * characterAnimSpeed);
@@ -254,11 +255,17 @@ void Game::render(
     // Draw AABBs
     {
         shapeRenderer->push_states(ShapeRendering::Color4u{ 0xFFE61A80 });
-        shapeRenderer->push_AABB(character_aabb1.min, character_aabb1.max);
-        shapeRenderer->push_AABB(character_aabb2.min, character_aabb2.max);
-        shapeRenderer->push_AABB(character_aabb3.min, character_aabb3.max);
-        shapeRenderer->push_AABB(horse_aabb.min, horse_aabb.max);
-        shapeRenderer->push_AABB(grass_aabb.min, grass_aabb.max);
+       // shapeRenderer->push_AABB(character_aabb1.min, character_aabb1.max);
+       // shapeRenderer->push_AABB(character_aabb2.min, character_aabb2.max);
+       // shapeRenderer->push_AABB(character_aabb3.min, character_aabb3.max);
+       // shapeRenderer->push_AABB(horse_aabb.min, horse_aabb.max);
+		auto view = entity_registry->view<MeshComponent, ColliderComponent>();
+        for (auto entity : view) {
+			auto& collider = view.get<MeshComponent>(entity);
+
+			shapeRenderer->push_AABB(collider.aabb.min, collider.aabb.max);
+        }
+       // shapeRenderer->push_AABB(grass_aabb.min, grass_aabb.max);
         shapeRenderer->pop_states<ShapeRendering::Color4u>();
     }
 

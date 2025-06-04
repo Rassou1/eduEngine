@@ -66,6 +66,7 @@ public:
 			auto& mesh = view2.get<MeshComponent>(entity);
 
 			RenderBoneAxles(mesh, transform, shapeRenderer);
+			mesh.aabb = mesh.mesh->m_model_aabb.post_transform(transform.transform);
 
 			if (!mesh.blend) 
 			{
