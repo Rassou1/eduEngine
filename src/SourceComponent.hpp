@@ -13,6 +13,7 @@ protected:
 
 	
 public:
+	SourceComponent() { };
 	SourceComponent(entt::entity entity) : sourceEntity(entity) {
 		for (int i = 0; i < 256; ++i) {
 			observers[i] = nullptr;

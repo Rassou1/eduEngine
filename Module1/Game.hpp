@@ -12,7 +12,7 @@
 #include "EventQueue.hpp"
 #include "ObserverComponent.hpp"
 #include "SourceComponent.hpp"
-
+#include "InteractionSystem.hpp"
 /// @brief A Game may hold, update and render 3D geometry and GUI elements
 class Game : public eeng::GameBase
 {
@@ -102,7 +102,7 @@ private:
     } player;
 
     // Game meshes
-    std::shared_ptr<eeng::RenderableMesh> grassMesh, horseMesh, characterMesh;
+    std::shared_ptr<eeng::RenderableMesh> grassMesh, horseMesh, characterMesh, questHorseMesh;
 
     // Game entity transformations
     glm::mat4 characterWorldMatrix1, characterWorldMatrix2, characterWorldMatrix3;
@@ -132,9 +132,10 @@ private:
     RenderSystem renderSystem;
 	SphereCollisionSystem collisionSystem;
 
-    EventQueue eventQueue;
+    EventQueue* eventQueue = nullptr;
     QuestObserver* questObserver = nullptr;
     SourceComponent* sourceComponent = nullptr;
+    InteractionSystem* interaction = nullptr;
 
     float animBlend;
     int characterAnimIndex2 = 2;

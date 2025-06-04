@@ -28,13 +28,12 @@ public:
 	enum class QuestProgression {
 		NotStarted,
 		Started,
-		HorseNeedsBrushing,
 		BrushInInventory,
 		BrushingHorse,
 		QuestCompleted
 	};
 
-	QuestProgression getProgress() const {
+	QuestProgression GetProgress() const {
 		return progress;
 	}
 
@@ -44,10 +43,6 @@ public:
 		case EventTypes::EVENT_STARTED_QUEST:
 			progress = QuestProgression::Started;
 			eeng::Log("Quest started by entity %d", int(source));
-			break;
-		case EventTypes::EVENT_HORSE_UNKEMPT:
-			progress = QuestProgression::HorseNeedsBrushing;
-			eeng::Log("Horse needs brushing");
 			break;
 		case EventTypes::EVENT_BRUSH_FOUND:
 			progress = QuestProgression::BrushInInventory;

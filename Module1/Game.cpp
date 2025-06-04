@@ -9,6 +9,7 @@
 #include "EventQueue.hpp"
 #include "SourceComponent.hpp"
 #include "BrushingComponent.hpp"
+#include "Tags.hpp"
 
 bool Game::init()
 {
@@ -36,6 +37,9 @@ bool Game::init()
     // Horse
     horseMesh = std::make_shared<eeng::RenderableMesh>();
     horseMesh->load("assets/Animals/Horse.fbx", false);
+
+    questHorseMesh = std::make_shared<eeng::RenderableMesh>();
+    questHorseMesh->load("assets/Animals/Horse.fbx", false);
 
     // Character
     characterMesh = std::make_shared<eeng::RenderableMesh>();
@@ -85,9 +89,10 @@ bool Game::init()
     // Remove root motion
     characterMesh->removeTranslationKeys("mixamorig:Hips");
 #endif
+    interaction = new InteractionSystem();
+    eventQueue = new EventQueue();
     questObserver = new QuestObserver();
-    sourceComponent = new SourceComponent(characterEntity);
-    sourceComponent->AddObserver(questObserver);
+    interaction->AddObserver(questObserver);
     /*grassWorldMatrix = glm_aux::TRS(
         { 0.0f, 0.0f, 0.0f },
         0.0f, { 0, 1, 0 },
@@ -106,10 +111,15 @@ bool Game::init()
 	entity_registry->emplace<TransformComponent>(horseEntity, TransformComponent(glm::vec3(5,0,-5), glm::vec3(0.01, 0.01, 0.01), glm::vec3(0,35,0)));
 	entity_registry->emplace<LinearVelocityComponent>(horseEntity, LinearVelocityComponent());
 	entity_registry->emplace<MeshComponent>(horseEntity, MeshComponent(horseMesh, 1, characterAnimIndex, true));
-	entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
+	//entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
 	entity_registry->emplace<ColliderComponent>(horseEntity, ColliderComponent()); 
-    //entity_registry->emplace<SourceComponent>(horseEntity, HorseSource(horseEntity));
     entity_registry->emplace<BrushingComponent>(horseEntity, BrushingComponent());
+
+    auto questHorse = entity_registry->create();
+    entity_registry->emplace<TransformComponent>(questHorse, TransformComponent(glm::vec3(10, 0, -5), glm::vec3(0.01, 0.01, 0.01), glm::vec3(0, 35, 0)));
+    entity_registry->emplace<MeshComponent>(questHorse, MeshComponent(questHorseMesh, 1, 3, false));
+    entity_registry->emplace<ColliderComponent>(questHorse, ColliderComponent());
+    entity_registry->emplace<QuestGiveTag>(questHorse, QuestGiveTag());
 
     return true;
 }
@@ -130,16 +140,11 @@ void Game::update(
 
     collisionSystem.Update(entity_registry);
 
-	NPCControllerSystem(entity_registry);
+	NPCControllerSystem(entity_registry);    
+   
+    interaction->Update(entity_registry, input, eventQueue, questObserver, deltaTime);
 
-    using key = eeng::InputManager::Key;
-    
-    if (input->IsKeyPressed(key::E))
-    {
-        sourceComponent->Notify(EVENT_STARTED_QUEST);
-    }
-
-    questObserver->update(eventQueue);
+    questObserver->update(*eventQueue);
 
 
     pointlight.pos = glm::vec3(
