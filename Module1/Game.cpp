@@ -112,7 +112,7 @@ bool Game::init()
 	entity_registry->emplace<LinearVelocityComponent>(horseEntity, LinearVelocityComponent());
 	entity_registry->emplace<MeshComponent>(horseEntity, MeshComponent(horseMesh, 1, characterAnimIndex, true));
 	//entity_registry->emplace<NPCControllerComponent>(horseEntity, NPCControllerComponent());
-	//entity_registry->emplace<ColliderComponent>(horseEntity, ColliderComponent()); 
+	entity_registry->emplace<ColliderComponent>(horseEntity, ColliderComponent()); 
     entity_registry->emplace<BrushingComponent>(horseEntity, BrushingComponent());
 
     auto questHorse = entity_registry->create();

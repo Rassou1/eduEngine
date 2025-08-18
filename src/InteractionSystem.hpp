@@ -37,8 +37,13 @@ public:
 			HandleQuestStart(registry, input, player, eventQueue, questObserver);
 
 			eeng::Log("Current event state is: %d", int(questObserver->GetProgress()));
-			HandleBrushInteraction(registry, input, player, eventQueue, questObserver, deltaTime);
 		}
+		if (input->IsKeyPressed(key::J))
+		{
+			HandleBrushInteraction(registry, input, player, eventQueue, questObserver, deltaTime);
+			eeng::Log("Current event state is: %d", int(questObserver->GetProgress()));
+		}
+
 	}
 
 	entt::entity GetPlayer(std::shared_ptr<entt::registry> registry)
@@ -73,7 +78,7 @@ public:
 			glm::vec3 npcCenter = npcTransform.position;
 
 			float distanceSq = glm::dot(playerCenter - npcCenter, playerCenter - npcCenter);
-			float radiusSum = playerCollider.sphere.radius + npcCollider.sphere.radius + 100;
+			float radiusSum = playerCollider.sphere.radius + npcCollider.sphere.radius + 10;
 
 			if (distanceSq <= radiusSum * radiusSum)
 			{

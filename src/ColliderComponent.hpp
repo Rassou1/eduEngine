@@ -93,13 +93,31 @@ public:
 		Sphere s;
 
 		s.center = aabb.center;
+		
+		std::vector<glm::vec3*> points;
+		points.push_back(new glm::vec3(aabb.center.x - aabb.halfWidths[0], aabb.center.y - aabb.halfWidths[1], aabb.center.z - aabb.halfWidths[2]));
+		points.push_back(new glm::vec3(aabb.center.x + aabb.halfWidths[0], aabb.center.y - aabb.halfWidths[1], aabb.center.z - aabb.halfWidths[2]));
+		points.push_back(new glm::vec3(aabb.center.x - aabb.halfWidths[0], aabb.center.y + aabb.halfWidths[1], aabb.center.z - aabb.halfWidths[2]));
+		points.push_back(new glm::vec3(aabb.center.x + aabb.halfWidths[0], aabb.center.y + aabb.halfWidths[1], aabb.center.z - aabb.halfWidths[2]));
+		points.push_back(new glm::vec3(aabb.center.x - aabb.halfWidths[0], aabb.center.y - aabb.halfWidths[1], aabb.center.z + aabb.halfWidths[2]));
+		points.push_back(new glm::vec3(aabb.center.x + aabb.halfWidths[0], aabb.center.y - aabb.halfWidths[1], aabb.center.z + aabb.halfWidths[2]));
+		points.push_back(new glm::vec3(aabb.center.x - aabb.halfWidths[0], aabb.center.y + aabb.halfWidths[1], aabb.center.z + aabb.halfWidths[2]));
+		points.push_back(new glm::vec3(aabb.center.x + aabb.halfWidths[0], aabb.center.y + aabb.halfWidths[1], aabb.center.z + aabb.halfWidths[2]));
+
+		auto minMaxVectors = FindMinMaxValues(points, 8);
+
+		auto maxDistance = FindMostDistantPoints(minMaxVectors, points);
+
+		glm::vec3 difference = *points[maxDistance.x] - *points[maxDistance.y];
+
+		s.radius = glm::sqrt(glm::dot(difference, difference)) / 2.0f;
 
 		//fix
-		s.radius = glm::sqrt(
+		/*s.radius = glm::sqrt(
 			aabb.halfWidths[0] * aabb.halfWidths[0] +
 			aabb.halfWidths[1] * aabb.halfWidths[1] +
 			aabb.halfWidths[2] * aabb.halfWidths[2]
-		);
+		);*/
 
 		return s;
 	}
